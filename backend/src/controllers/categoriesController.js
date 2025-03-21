@@ -45,4 +45,4 @@ categoriesController.getCategorie = async (req, res) => {
   res.json(categorie);
 };
 
-export default userController;
+export default categoriesController;

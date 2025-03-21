@@ -45,4 +45,4 @@ ordersController.getOrder = async (req, res) => {
   res.json(order);
 };
 
-export default userController;
+export default ordersController;

@@ -6,13 +6,13 @@ const employeesController = {};
 import  EmployeesModels from "../models/Employees.js";
 
 // SELECT
-employeesController.getClientes = async (req, res) => {
+employeesController.getEmployees = async (req, res) => {
   const employees = await EmployeesModels.find();
   res.json(employees);
 };
 
 // INSERT
-employeesController.createClientes = async (req, res) => {
+employeesController.createEmployees = async (req, res) => {
   const { name, surname, email, position, nurse_credential} = req.body;
 
   const newEmployees = new EmployeesModels({ name, surname, email, position, nurse_credential });
@@ -45,4 +45,4 @@ employeesController.getEmployee = async (req, res) => {
   res.json(employee);
 };
 
-export default userController;
+export default employeesController;

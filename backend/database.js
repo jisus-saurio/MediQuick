@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import {config} from "./utils/config.js";
+import {config} from "./src/config.js";
 
 //1- Configurar la URI de la base de datos
 //const URI = "mongodb://localhost:27017/ferreteriaEPA";
