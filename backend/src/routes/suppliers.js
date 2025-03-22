@@ -1,11 +1,18 @@
-import express from 'express';  
-const router = express.router();
-import supplierController from '../controllers/suppliersControllers';
-router 
+import express from "express";
 
-    .route('/')
-    .get(supplierController.getProveedores)
-    .post(supplierController.createProveedores)
-    .put(supplierController.updateProveedorestores)
-    .delete(supplierController.deleteProveedores);
-export default router;
+const router = express.Router();
+
+import suppliersController from "../controllers/suppliersControllers.js";
+
+router
+  .route("/")
+  .get(suppliersController.getSupplier)
+  .post(suppliersController.createSupplier);
+
+router
+  .route("/:id")
+  .get(suppliersController.getSuppliers)
+  .put(suppliersController.updateSupplier)
+  .delete(suppliersController.deleteSupplier);
+
+export default router

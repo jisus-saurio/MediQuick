@@ -18,13 +18,13 @@ categoriesController.createCategories = async (req, res) => {
   const newEmployees = new CategoriesModels({ name, description });
 
   await newEmployees.save();
-  res.json({ message: "Producto guardado" });
+  res.json({ message: "Categoria guardada" });
 };
 
 // DELETE
 categoriesController.deleteCategories = async (req, res) => {
   const deleteEmployees = await CategoriesModels.findByIdAndDelete(req.params.id);
-  res.json({ message: "Producto eliminado" });
+  res.json({ message: "Categoria eliminada" });
 };
 
 // UPDATE
@@ -36,7 +36,7 @@ categoriesController.updateCategories = async (req, res) => {
     { new: true }
   );
 
-  res.json({ message: "producto actualizado" });
+  res.json({ message: "Categoria actualizada" });
 };
 
 // SELECT 1 PRODUCT BY ID

@@ -3,12 +3,12 @@
 
 const ordersController = {};
 
-import  OrdersModels from "../models/Employees.js";
+import  OrdersModels from "../models/Orders.js";
 
 // SELECT
 ordersController.getOrders = async (req, res) => {
-  const orders = await OrdersModels.find().populate("user_id");
-  res.json(orders);
+  const UserOrder = await OrdersModels.find().populate("user_id");
+  res.json(UserOrder);
 };
 
 // INSERT
@@ -18,13 +18,13 @@ ordersController.createOrders = async (req, res) => {
   const newOrders = new OrdersModels({ user_id, products, total });
 
   await newOrders.save();
-  res.json({ message: "Producto guardado" });
+  res.json({ message: "Orden guardada" });
 };
 
 // DELETE
 ordersController.deleteOrders = async (req, res) => {
   const deleteOrders = await OrdersModels.findByIdAndDelete(req.params.id);
-  res.json({ message: "Producto eliminado" });
+  res.json({ message: "Orden eliminada" });
 };
 
 // UPDATE
@@ -36,7 +36,7 @@ ordersController.updateOrders = async (req, res) => {
     { new: true }
   );
 
-  res.json({ message: "producto actualizado" });
+  res.json({ message: "Orden actualizada" });
 };
 
 // SELECT 1 PRODUCT BY ID

@@ -13,6 +13,6 @@ router
   .route("/:id")
   .get(ordersController.getOrder)
   .put(ordersController.updateOrders)
-  .delete(ordersController.deleteorders);
+  .delete(ordersController.deleteOrders);
 
 export default router

@@ -18,13 +18,13 @@ employeesController.createEmployees = async (req, res) => {
   const newEmployees = new EmployeesModels({ name, surname, email, position, nurse_credential });
 
   await newEmployees.save();
-  res.json({ message: "Producto guardado" });
+  res.json({ message: "Empleado guardado" });
 };
 
 // DELETE
 employeesController.deleteEmployees = async (req, res) => {
   const deleteEmployees = await EmployeesModels.findByIdAndDelete(req.params.id);
-  res.json({ message: "Producto eliminado" });
+  res.json({ message: "Empleado eliminado" });
 };
 
 // UPDATE
@@ -36,7 +36,7 @@ employeesController.updateEmployees = async (req, res) => {
     { new: true }
   );
 
-  res.json({ message: "producto actualizado" });
+  res.json({ message: "Empleado actualizado" });
 };
 
 // SELECT 1 PRODUCT BY ID

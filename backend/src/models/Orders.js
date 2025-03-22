@@ -18,4 +18,4 @@ const OrdersSchema = new Schema({
     total: { type: Number, required: true },
 });
 
-export const UserOrder = model("UserOrder", OrdersSchema);
+export default model("UserOrder", OrdersSchema);

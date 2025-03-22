@@ -1,7 +1,6 @@
 /*
 Suppliers (Proveedores):
 {
-  "_id": ObjectId("5f50c31b1c9d440000a1b2c7"),
   "name": "Farmaceutica XYZ",
   "contact": "contact@pharmaceuticalxyz.com",
   "phone": "555-5678"

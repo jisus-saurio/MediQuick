@@ -18,13 +18,13 @@ userController.createUsers = async (req, res) => {
   const newUsers = new UsersModels({ name, email, password, address, phone });
 
   await newUsers.save();
-  res.json({ message: "Producto guardado" });
+  res.json({ message: "Usuario guardado" });
 };
 
 // DELETE
 userController.deleteUsers = async (req, res) => {
   const deleteUsers = await UsersModels.findByIdAndDelete(req.params.id);
-  res.json({ message: "Producto eliminado" });
+  res.json({ message: "Usuario eliminado" });
 };
 
 // UPDATE
@@ -36,7 +36,7 @@ userController.updateUsers = async (req, res) => {
     { new: true }
   );
 
-  res.json({ message: "producto actualizado" });
+  res.json({ message: "Usuario actualizado" });
 };
 
 // SELECT 1 PRODUCT BY ID
