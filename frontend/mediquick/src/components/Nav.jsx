@@ -24,19 +24,33 @@ function Navbar() {
             onClick={() => handleClick(item)}
             style={styles.menuItem}
           >
-            <span style={{
-              ...styles.link,
-              color: active === item ? '#ff6600' : '#004466',
-            }}>
+            <span
+              style={{
+                ...styles.link,
+                color: active === item ? '#ff6600' : '#004466',
+              }}
+            >
               {item}
             </span>
             {active === item && <div style={styles.underline}></div>}
           </div>
         ))}
       </div>
-      <button style={styles.loginButton} onClick={handleLoginClick}>
-        Login
-      </button>
+
+      {/* Login Button */}
+      <div
+        onClick={handleLoginClick}
+        style={{
+          ...styles.menuItem,
+          position: 'absolute',
+          right: '20px',
+        }}
+      >
+        <button style={styles.loginButton}>
+          Login
+        </button>
+        {active === 'Login' && <div style={{ ...styles.underline, marginTop: '5px' }}></div>}
+      </div>
     </nav>
   );
 }
@@ -59,11 +73,13 @@ function getPath(name) {
 const styles = {
   nav: {
     display: 'flex',
-    justifyContent: 'center', 
+    justifyContent: 'center',
     alignItems: 'center',
     padding: '10px 20px',
-    background: 'transparent', 
+    background: 'transparent',
     position: 'relative',
+    width: '97%', // Ancho completo
+    height: '40px', // Altura fija
   },
   menu: {
     display: 'flex',
@@ -91,18 +107,15 @@ const styles = {
     transition: 'all 0.3s ease',
   },
   loginButton: {
-    position: 'absolute',
-    right: '20px',
     background: '#7dbbe6',
     border: 'none',
-    padding: '10px 20px', // <-- Botón más grande
+    padding: '10px 20px',
     borderRadius: '20px',
     color: 'white',
     fontWeight: 'bold',
-    fontSize: '18px', // <-- Letra más grande
+    fontSize: '18px',
     cursor: 'pointer',
-  }
+  },
 };
 
 export default Navbar;
-

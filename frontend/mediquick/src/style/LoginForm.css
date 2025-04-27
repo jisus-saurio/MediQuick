@@ -1,0 +1,83 @@
+.container {
+    display: flex;
+    justify-content: flex-start; /* El contenido (formulario) sigue a la izquierda */
+    align-items: center; /* Centrado verticalmente */
+    height: 92.4vh; /* Altura completa de la ventana */
+    padding: 0 5%;
+    background-color: #ffffff;
+    background-image: url('/LoginPages.png');
+    background-repeat: no-repeat;
+    background-position: right center; /* Alineada a la derecha y centrada */
+    background-size: 1100px; /* Tamaño controlado de la imagen */
+    overflow: hidden; /* Oculta el scroll */
+}
+
+.login-box {
+    background: #fbece7;
+    padding: 4rem; /* Más espacio interno */
+    border-radius: 20px;
+    width: 450px; /* Más ancho */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    margin-left: 5%;
+}
+
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 2rem;
+    font-size: 1.4rem;
+}
+
+.tabs span {
+    cursor: pointer;
+    color: #5f8aa2;
+    font-weight: bold;
+    border-bottom: 2px solid transparent;
+}
+
+.tabs .active {
+    color: #f27030;
+    border-bottom: 2px solid #f27030;
+}
+
+.inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.inputs input {
+    padding: 1rem;
+    border: none;
+    border-radius: 25px;
+    background: #a5c8d8;
+}
+
+.forgot {
+    margin-top: 0.5rem;
+    text-align: left;
+}
+
+.forgot a {
+    font-size: 0.9rem;
+    color: #f27030;
+    font-style: italic;
+    text-decoration: none;
+}
+
+.login-btn {
+    margin-top: 1.5rem;
+    width: 100%;
+    background: #a5c8d8;
+    border: none;
+    padding: 1rem;
+    border-radius: 25px;
+    font-weight: bold;
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.login-btn:hover {
+    background: #8bb1c3;
+}
