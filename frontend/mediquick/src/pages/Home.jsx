@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import '../style/home.css'; // CSS actualizado
+import '../style/home.css'; // Importa los estilos CSS actualizados
+
+// Importa las imágenes usadas en el home
 import banner1 from '../img/banner1.jpg';
 import banner2 from '../img/banner2.jpg';
 import banner3 from '../img/banner3.jpg';
@@ -11,26 +13,27 @@ import prod2 from '../img/prod2.jpg';
 import prod3 from '../img/prod3.webp';
 
 function Home() {
-  const [currentImage, setCurrentImage] = useState(0);
+  const [currentImage, setCurrentImage] = useState(0); // Estado para controlar qué imagen se muestra en el carrusel
 
-  const images = [banner1, banner2, banner3];
+  const images = [banner1, banner2, banner3]; // Array con las imágenes del carrusel
 
   useEffect(() => {
+    // Configura un intervalo para cambiar la imagen cada 4 segundos
     const interval = setInterval(() => {
       setCurrentImage((prevImage) => (prevImage + 1) % images.length);
-    }, 4000); 
-    return () => clearInterval(interval);
+    }, 4000);
+    return () => clearInterval(interval); // Limpia el intervalo cuando el componente se desmonta
   }, [images.length]);
 
   return (
-    <div className="home-container">
+    <div className="home-container"> {/* Contenedor principal de la página Home */}
       
-      {/* Carrusel */}
+      {/* Carrusel de banners */}
       <section className="banner">
         <img src={images[currentImage]} alt="Banner" className="banner-image" />
       </section>
 
-      {/* Categorías */}
+      {/* Sección de categorías */}
       <h2 className="section-title">Categorías</h2>
       <section className="icons">
         <div className="circle">
@@ -44,7 +47,7 @@ function Home() {
         </div>
       </section>
 
-      {/* Productos */}
+      {/* Sección de productos destacados */}
       <h2 className="section-title">Productos</h2>
       <section className="cards">
         <div className="card">
@@ -61,4 +64,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Home; // Exporta el componente para poder usarlo en otras partes de la aplicación
