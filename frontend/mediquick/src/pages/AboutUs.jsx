@@ -17,14 +17,14 @@ const AboutUs = () => {
 
       <div className="about-content">
         <div className="image-layout">
-          <div className="img-box rect tall"> {/* Imagen 1 */} </div>
+
           <div className="img-box circle large"> {/* Imagen 2 */} </div>
-          <div className="img-box circle small"> {/* Imagen 3 */} </div>
-          <div className="img-box rect horizontal"> {/* Imagen 4 */} </div>
-          <div className="img-box circle small"> {/* Imagen 5 */} </div>
-          <div className="img-box circle large"> {/* Imagen 6 */} </div>
-          <div className="img-box rect horizontal"> {/* Imagen 7 */} </div>
-          <div className="img-box circle small"> {/* Imagen 8 */} </div>
+          <div className="img-box circle large"> {/* Imagen 3 */} </div>
+
+          <div className="img-box circle large"> {/* Imagen 5 */} </div>
+
+
+          <div className="img-box circle large"> {/* Imagen 8 */} </div>
         </div>
       </div>
     </section>
