@@ -62,9 +62,9 @@ function getPath(name) {
     case 'Products':
       return '/products';
     case 'About us':
-      return '/about';
+      return '/aboutUs'; // Cambiado a '/aboutUs'
     case 'Contact':
-      return '/contact';
+      return '/formulario'; // Cambiado a '/formulario'
     default:
       return '/';
   }
