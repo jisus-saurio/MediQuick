@@ -13,7 +13,7 @@ const Formulario = () => {
   
         <div className="relative z-10 px-10 py-20 flex flex-col md:flex-row items-center gap-10">
           <form className="bg-white space-y-4 flex-1">
-            <div className="flex gap-4">
+            <div className="flex gap-6">
               <input type="text" placeholder="Nombre" className="w-1/2 p-3 rounded-md shadow-md" />
               <input type="text" placeholder="Apellido" className="w-1/2 p-3 rounded-md shadow-md" />
             </div>

@@ -6,6 +6,8 @@ import AboutUs from './pages/AboutUs'
 import Formulario from './pages/Formulario'
 import Navbar from './components/Nav'
 import Footer from './components/Footer'
+import Proveedores from './pages/Proveedores'
+import AgregarProv from './pages/AgregarProv'
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
         <Route path="/products" element={<Products />} />
         <Route path='/AboutUs' element={<AboutUs/>} />
         <Route path="/formulario" element={<Formulario />} />
+        <Route path="/proveedores" element={<Proveedores />} />
+        <Route path="/agregar_prov" element={<AgregarProv />} />
       </Routes>
       <Footer />
     </Router>
