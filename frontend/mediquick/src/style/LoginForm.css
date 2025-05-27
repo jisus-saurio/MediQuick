@@ -1,24 +1,25 @@
 .container {
     display: flex;
-    justify-content: flex-start; /* El contenido (formulario) sigue a la izquierda */
-    align-items: center; /* Centrado verticalmente */
-    height: 92.4vh; /* Altura completa de la ventana */
+    justify-content: flex-start;
+    align-items: center;
+    height: 92.4vh;
     padding: 0 5%;
     background-color: #ffffff;
     background-image: url('/LoginPages.png');
     background-repeat: no-repeat;
-    background-position: right center; /* Alineada a la derecha y centrada */
-    background-size: 1100px; /* Tamaño controlado de la imagen */
-    overflow: hidden; /* Oculta el scroll */
+    background-position: right center;
+    background-size: 1100px;
+    overflow: hidden;
 }
 
 .login-box {
     background: #fbece7;
-    padding: 4rem; /* Más espacio interno */
+    padding: 4rem;
     border-radius: 20px;
-    width: 450px; /* Más ancho */
+    width: 450px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     margin-left: 5%;
+    transition: all 0.3s ease-in-out;
 }
 
 .tabs {
@@ -33,6 +34,8 @@
     color: #5f8aa2;
     font-weight: bold;
     border-bottom: 2px solid transparent;
+    padding-bottom: 4px;
+    transition: color 0.2s ease;
 }
 
 .tabs .active {
@@ -40,17 +43,40 @@
     border-bottom: 2px solid #f27030;
 }
 
+/* FORMULARIOS EN GENERAL */
 .inputs {
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
 }
 
+/* CAMPOS LOGIN Y SIGNUP */
 .inputs input {
     padding: 1rem;
     border: none;
     border-radius: 25px;
     background: #a5c8d8;
+    font-size: 1rem;
+    transition: background 0.2s ease-in-out;
+    width: 100%;
+    max-width: 350px;
+    align-self: center; /* Centrado horizontal */
+}
+
+.inputs input:focus {
+    outline: none;
+    background: #cde1eb;
+}
+
+/* FORMULARIO SIGN UP centrado */
+form.inputs {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra todo horizontalmente */
+    justify-content: center;
+    gap: 1.2rem;
+    margin: 0;
+    text-align: center;
 }
 
 .forgot {
@@ -68,6 +94,7 @@
 .login-btn {
     margin-top: 1.5rem;
     width: 100%;
+    max-width: 350px;
     background: #a5c8d8;
     border: none;
     padding: 1rem;
@@ -76,6 +103,8 @@
     color: white;
     font-size: 1.1rem;
     cursor: pointer;
+    transition: background 0.2s ease;
+    align-self: center; /* Centra el botón */
 }
 
 .login-btn:hover {
