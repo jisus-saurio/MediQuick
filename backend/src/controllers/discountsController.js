@@ -23,14 +23,14 @@ discountsController.createDiscounts = async (req, res) => {
 
 // DELETE
 discountsController.deleteDiscounts = async (req, res) => {
-  const deleteEmployees = await DiscountsModels.findByIdAndDelete(req.params.id);
+  const deleteDiscounts = await DiscountsModels.findByIdAndDelete(req.params.id);
   res.json({ message: "Descuento eliminado" });
 };
 
 // UPDATE
 discountsController.updateDiscounts = async (req, res) => {
   const { name, surname, email, position, nurse_credential } = req.body;
-  const updateEmployees = await DiscountsModels.findByIdAndUpdate(
+  const updateDiscounts = await DiscountsModels.findByIdAndUpdate(
     req.params.id,
     { name, surname, email, position, nurse_credential },
     { new: true }

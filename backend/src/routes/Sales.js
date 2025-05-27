@@ -2,17 +2,17 @@ import express from "express";
 
 const router = express.Router();
 
-import productsController from "../controllers/productsController.js";
+import salesController from "../controllers/salesController.js";
 
 router
   .route("/")
-  .get(productsController.getProducts)
-  .post(productsController.createProducts);
+  .get(salesController.getSales)
+  .post(salesController.createSales);
 
 router
   .route("/:id")
-  .get(productsController.getProduct)
-  .put(productsController.updateProducts)
-  .delete(productsController.deleteProducts);
+  .get(salesController.getSale)
+  .put(salesController.updateSales)
+  .delete(salesController.deleteSales);
 
 export default router

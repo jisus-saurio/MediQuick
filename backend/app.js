@@ -9,13 +9,24 @@ import cartsRoutes from "./src/routes/carts.js";
 import salesRoutes from "./src/routes/Sales.js";
 import suppliersRoutes from "./src/routes/suppliers.js";
 import orderRoutes from "./src/routes/orders.js";
+import cors from "cors"
+import cookieParser from 'cookie-parser';
 
 // Creo una constante que es igual a la libreria que
 // acabo de importar y lo ejecuto
 const app = express();
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    // Permitir envío de cookies y credenciales
+    credentials: true
+  })
+);
+
 // middleware para aceptar datos desde postman
 app.use(express.json());
+app.use(cookieParser()); 
 
 app.use("/api/users", userRoutes);
 app.use("/api/employees", employeesRoutes);

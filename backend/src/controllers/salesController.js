@@ -1,38 +1,40 @@
-// Aqui en el controlador, irán todos los metodos
-// (C R U D)
-
 const salesController = {};
+import SalesModels from "../models/Sales.js";
 
-import  SalesModels from "../models/Sales.js";
 
 // SELECT
-salesController.getCategories = async (req, res) => {
+salesController.getSales = async (req, res) => {
   const Payment = await SalesModels.find();
   res.json(Payment);
 };
 
 // INSERT
-salesController.createCategories = async (req, res) => {
-  const {  cartId, paymentMethod, address, status} = req.body;
+salesController.createSales = async (req, res) => {
+  const { cartId, paymentMethod, address, status } = req.body;
 
-  const newEmployees = new SalesModels({ cartId, paymentMethod, address, status });
+  const newEmployees = new SalesModels({
+    cartId,
+    paymentMethod,
+    address,
+    status,
+  });
 
   await newEmployees.save();
   res.json({ message: "Venta guardada" });
 };
 
 // DELETE
-salesController.deleteCategories = async (req, res) => {
-  const deleteEmployees = await SalesModels.findByIdAndDelete(req.params.id);
+salesController.deleteSales = async (req, res) => {
+  const deleteSales = await SalesModels.findByIdAndDelete(req.params.id);
   res.json({ message: "Venta eliminada" });
 };
 
 // UPDATE
-salesController.updateCategories = async (req, res) => {
-  const {  cartId, paymentMethod, address, status } = req.body;
-  const updateEmployees = await SalesModels.findByIdAndUpdate(
+salesController.updateSales = async (req, res) => {
+  const { cartId, paymentMethod, address, status } = req.body;
+  const updateSales = await SalesModels.findByIdAndUpdate(
     req.params.id,
-    {  cartId, paymentMethod, address, status },
+    { cartId, paymentMethod, address, status },
     { new: true }
   );
 
@@ -40,7 +42,7 @@ salesController.updateCategories = async (req, res) => {
 };
 
 // SELECT 1 PRODUCT BY ID
-salesController.getCategorie = async (req, res) => {
+salesController.getSale = async (req, res) => {
   const Payments = await SalesModels.findById(req.params.id);
   res.json(Payments);
 };

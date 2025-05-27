@@ -23,14 +23,14 @@ categoriesController.createCategories = async (req, res) => {
 
 // DELETE
 categoriesController.deleteCategories = async (req, res) => {
-  const deleteEmployees = await CategoriesModels.findByIdAndDelete(req.params.id);
+  const deleteCategories = await CategoriesModels.findByIdAndDelete(req.params.id);
   res.json({ message: "Categoria eliminada" });
 };
 
 // UPDATE
 categoriesController.updateCategories = async (req, res) => {
   const { name, description } = req.body;
-  const updateEmployees = await CategoriesModels.findByIdAndUpdate(
+  const updateCategories = await CategoriesModels.findByIdAndUpdate(
     req.params.id,
     { name, description },
     { new: true }
