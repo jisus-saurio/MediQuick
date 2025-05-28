@@ -3,12 +3,13 @@ name
  surname
     email
     position
+    surname
     nurse_credential
 */
 
 import { Schema, model } from "mongoose";
 
-const nurseSchema = new Schema({
+const EmployeesSchema = new Schema({
   name: { type: String, required: true },
   surname: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -16,4 +17,4 @@ const nurseSchema = new Schema({
   nurse_credential: { type: String, required: true },
 });
 
-export default model("nurse", nurseSchema);
+export default model("Employees", EmployeesSchema);

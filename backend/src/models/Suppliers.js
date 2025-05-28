@@ -1,9 +1,9 @@
 /*
 Suppliers (Proveedores):
 {
-  "name": "Farmaceutica XYZ",
-  "contact": "contact@pharmaceuticalxyz.com",
-  "phone": "555-5678"
+  "name": ,
+  "contact": ,
+  "phone": 
 }
 */
 

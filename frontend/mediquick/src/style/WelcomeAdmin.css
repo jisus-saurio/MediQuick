@@ -1,0 +1,50 @@
+.welcome-container {
+  max-width: 600px;
+  margin: 50px auto;
+  text-align: center;
+  padding: 40px;
+  background-color: #fdfdfd;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-title {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.welcome-subtitle {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  margin-bottom: 30px;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.admin-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  color: white;
+  background-color: #3498db;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.admin-button:hover {
+  background-color: #2980b9;
+}
+
+.admin-button.logout {
+  background-color: #e74c3c;
+}
+
+.admin-button.logout:hover {
+  background-color: #c0392b;
+}

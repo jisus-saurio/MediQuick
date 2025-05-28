@@ -20,4 +20,4 @@ const OrdersSchema = new Schema({
   total: { type: Number, required: true },
 });
 
-export default model("UserOrder", OrdersSchema);
+export default model("orders", OrdersSchema);

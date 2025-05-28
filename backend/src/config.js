@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
 
-// ejecutamos la libreria dotenv
 dotenv.config();
 
 export const config = {
@@ -8,12 +7,12 @@ export const config = {
     URI: process.env.DB_URI,
   },
   server: {
-    PORT: process.env.PORT,
+    PORT: process.env.PORT || 4000,
   },
 
   JWT: {
-    SECRET: process.env.JWT_SECRET,
-    EXPIRES: process.env.JWT_EXPIRES,
+    SECRET: process.env.JWT_SECRET || "defaultSecret",
+    EXPIRES: process.env.JWT_EXPIRES || "1h", 
   },
   adminf: {
     ADMIN_EMAIL: process.env.ADMIN_EMAIL,

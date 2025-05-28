@@ -1,47 +1,49 @@
-// importar todo lo de la libreria "express"
+// Importar todo lo de la librería "express"
 import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+
+// Importar rutas
 import userRoutes from "./src/routes/user.js";
 import employeesRoutes from "./src/routes/employees.js";
-import CategoriesRoutes from "./src/routes/catergories.js";
+import categoriesRoutes from "./src/routes/catergories.js"; // Corrección del nombre del archivo
 import productsRoutes from "./src/routes/products.js";
 import discountsRoutes from "./src/routes/discounts.js";
 import cartsRoutes from "./src/routes/carts.js";
-import salesRoutes from "./src/routes/Sales.js";
+import salesRoutes from "./src/routes/Sales.js"; // Corrección del nombre del archivo
 import suppliersRoutes from "./src/routes/suppliers.js";
 import orderRoutes from "./src/routes/orders.js";
-import cors from "cors"
-import cookieParser from 'cookie-parser';
+import loginRoutes from "./src/routes/login.js";
+import logoutRoutes from "./src/routes/logout.js";
+import { validateAuthToken } from "./src/middleware/validateAuthToken.js";
 
-// Creo una constante que es igual a la libreria que
-// acabo de importar y lo ejecuto
+// Crear una instancia de Express
 const app = express();
 
+// Configuración de CORS
 app.use(
   cors({
     origin: "http://localhost:5173",
-    // Permitir envío de cookies y credenciales
-    credentials: true
+    credentials: true, // Permitir envío de cookies y credenciales
   })
 );
 
-// middleware para aceptar datos desde postman
+// Middleware para analizar JSON y cookies
 app.use(express.json());
-app.use(cookieParser()); 
+app.use(cookieParser());
 
-app.use("/api/users", userRoutes);
-app.use("/api/employees", employeesRoutes);
-app.use("/api/categories", CategoriesRoutes);
-app.use("/api/products", productsRoutes);
-app.use("/api/discounts", discountsRoutes);
-app.use("/api/carts", cartsRoutes);
-app.use("/api/sales", salesRoutes);
-app.use("/api/suppliers", suppliersRoutes);
-app.use("/api/order", orderRoutes);
+// Rutas protegidas por el middleware de autenticación
+app.use("/api/users", validateAuthToken(["Admin"]), userRoutes);
+app.use("/api/employees",validateAuthToken(["Employee", "Admin"]),employeesRoutes);
+app.use("/api/categories", validateAuthToken(["Admin"]), categoriesRoutes);
+app.use("/api/products", validateAuthToken(["Admin"]), productsRoutes);
+app.use("/api/discounts", validateAuthToken(["Admin"]), discountsRoutes);
+app.use("/api/carts", validateAuthToken(["Employee", "Admin"]), cartsRoutes);
+app.use("/api/sales", validateAuthToken(["Employee", "Admin"]), salesRoutes);
+app.use("/api/suppliers", validateAuthToken(["Admin"]), suppliersRoutes);
+app.use("/api/orders", validateAuthToken(["Employee", "Admin"]), orderRoutes);
+app.use("/api/login", loginRoutes);
+app.use("/api/logout", logoutRoutes);
 
-
-
-
-
-// Exporto la constante para poder usar express en otros
-// archivos
+// Exportar la instancia de la aplicación para poder usar Express en otros archivos
 export default app;

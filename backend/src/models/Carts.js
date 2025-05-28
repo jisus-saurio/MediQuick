@@ -29,4 +29,4 @@ const CartsSchema = new Schema({
     status: { type: String, enum: ["pending", "processing", "shipped", "delivered", "cancelled"], default: "pending" }
 });
 
-export default model("carts", CartsSchema);
+export default model("cart", CartsSchema);

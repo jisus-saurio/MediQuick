@@ -1,4 +1,4 @@
-.proveedores-container {
+.empleados-container {
   width: 100%;
   min-height: 100vh;
   background-image: url('../img/fondoP.png');
@@ -24,7 +24,7 @@
   text-align: center;
 }
 
-/* Área scrollable */
+/* Contenedor scrollable oculto visualmente */
 .scroll-area {
   max-height: 480px;
   overflow-y: scroll;
@@ -33,11 +33,12 @@
   scrollbar-width: none; /* Firefox */
 }
 
+/* Ocultar scrollbar en Webkit */
 .scroll-area::-webkit-scrollbar {
   display: none;
 }
 
-/* Tarjetas */
+/* Estilo mejorado para las tarjetas */
 .employee-card {
   background-color: #ffffffee;
   border-radius: 16px;
@@ -68,6 +69,7 @@
   color: #4b5563;
 }
 
+/* Detalles visibles al expandir */
 .employee-details {
   margin-top: 12px;
   border-top: 1px solid #e5e7eb;
@@ -77,7 +79,7 @@
   gap: 6px;
 }
 
-/* Acciones dentro de la tarjeta */
+/* Acciones de la card */
 .card-actions {
   display: flex;
   justify-content: flex-end;
@@ -136,7 +138,7 @@
   transform: scale(0.95);
 }
 
-/* Modal */
+/* Modal sin cambios por ahora */
 .modal {
   position: fixed;
   top: 0;

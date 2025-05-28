@@ -20,4 +20,4 @@ const productSchema = new Schema({
   image: { type: String }
 });
 
-export default model("product", productSchema);
+export default model("products", productSchema);
