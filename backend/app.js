@@ -6,11 +6,11 @@ import cookieParser from "cookie-parser";
 // Importar rutas
 import userRoutes from "./src/routes/user.js";
 import employeesRoutes from "./src/routes/employees.js";
-import categoriesRoutes from "./src/routes/catergories.js"; // Corrección del nombre del archivo
+import categoriesRoutes from "./src/routes/catergories.js"; 
 import productsRoutes from "./src/routes/products.js";
 import discountsRoutes from "./src/routes/discounts.js";
 import cartsRoutes from "./src/routes/carts.js";
-import salesRoutes from "./src/routes/Sales.js"; // Corrección del nombre del archivo
+import salesRoutes from "./src/routes/Sales.js"; 
 import suppliersRoutes from "./src/routes/suppliers.js";
 import orderRoutes from "./src/routes/orders.js";
 import loginRoutes from "./src/routes/login.js";

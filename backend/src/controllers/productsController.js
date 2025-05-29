@@ -1,6 +1,9 @@
 import productsModel from "../models/Products.js";
 import { v2 as cloudinary } from "cloudinary";
+import multer from 'multer';
 import { config } from "../config.js";
+import Category from '../models/Categories.js'; 
+import Supplier from '../models/Suppliers.js'; 
 
 // Configurar Cloudinary
 cloudinary.config({
@@ -9,24 +12,43 @@ cloudinary.config({
   api_secret: config.cloudinary.API_SECRET,
 });
 
+// Configurar multer para manejar la subida de archivos
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Asegúrate de que esta carpeta exista
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ storage });
+
+// Controlador de productos
 const productsController = {};
 
-// SELECT - Obtener todos los productos
+// Obtener todos los productos
 productsController.getProducts = async (req, res) => {
   try {
-    const products = await productsModel.find();
+    const products = await productsModel.find().populate('categoryId supplierId');
     res.json(products);
   } catch (error) {
+    console.error("Error al obtener productos:", error);
     res.status(500).json({ error: "Error al obtener productos" });
   }
 };
 
-// INSERT - Agregar un nuevo producto
+// Agregar un nuevo producto
 productsController.createProducts = async (req, res) => {
   try {
     const { name, description, price, stock, categoryId, supplierId } = req.body;
-    let imageUrl = "";
 
+    // Validación de campos requeridos
+    if (!name || !price || !stock || !categoryId || !supplierId) {
+      return res.status(400).json({ error: "Nombre, precio, stock, categoría y proveedor son requeridos." });
+    }
+
+    let imageUrl = "";
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: "products",
@@ -46,18 +68,19 @@ productsController.createProducts = async (req, res) => {
     });
 
     await newProduct.save();
-    res.json({ message: "Producto agregado con éxito" });
+    res.status(201).json({ message: "Producto agregado con éxito", product: newProduct });
   } catch (error) {
+    console.error("Error al agregar producto:", error);
     res.status(500).json({ error: "Error al agregar producto" });
   }
 };
 
-// UPDATE - Actualizar un producto
+// Actualizar un producto
 productsController.updateProducts = async (req, res) => {
   try {
     const { name, description, price, stock, categoryId, supplierId } = req.body;
-    let imageUrl = "";
 
+    let imageUrl = "";
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: "products",
@@ -66,36 +89,50 @@ productsController.updateProducts = async (req, res) => {
       imageUrl = result.secure_url;
     }
 
-    await productsModel.findByIdAndUpdate(
+    const updatedProduct = await productsModel.findByIdAndUpdate(
       req.params.id,
       { name, description, price, stock, categoryId, supplierId, image: imageUrl },
       { new: true }
-    );
+    ).populate('categoryId supplierId');
 
-    res.json({ message: "Producto actualizado con éxito" });
+    if (!updatedProduct) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
+
+    res.json({ message: "Producto actualizado con éxito", product: updatedProduct });
   } catch (error) {
+    console.error("Error al actualizar producto:", error);
     res.status(500).json({ error: "Error al actualizar producto" });
   }
 };
 
-// DELETE - Eliminar un producto
+// Eliminar un producto
 productsController.deleteProducts = async (req, res) => {
   try {
-    await productsModel.findByIdAndDelete(req.params.id);
+    const deletedProduct = await productsModel.findByIdAndDelete(req.params.id);
+    if (!deletedProduct) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
     res.json({ message: "Producto eliminado con éxito" });
   } catch (error) {
+    console.error("Error al eliminar producto:", error);
     res.status(500).json({ error: "Error al eliminar producto" });
   }
 };
 
-// SELECT - Obtener un producto por ID
+// Obtener un producto por ID
 productsController.getProduct = async (req, res) => {
   try {
-    const product = await productsModel.findById(req.params.id);
+    const product = await productsModel.findById(req.params.id).populate('categoryId supplierId');
+    if (!product) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
     res.json(product);
   } catch (error) {
+    console.error("Error al obtener producto:", error);
     res.status(500).json({ error: "Error al obtener producto" });
   }
 };
 
-export default productsController;
+// Exportar el controlador y el middleware de multer
+export { upload, productsController };

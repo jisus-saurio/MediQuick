@@ -1,18 +1,18 @@
 import express from "express";
+import { upload, productsController } from "../controllers/productsController.js"; // Asegúrate de importar correctamente
 
 const router = express.Router();
 
-import productsController from "../controllers/productsController.js";
-
+// Rutas para productos
 router
   .route("/")
-  .get(productsController.getProducts)
-  .post(productsController.createProducts);
+  .get(productsController.getProducts) // Obtener todos los productos
+  .post(upload.single('image'), productsController.createProducts); // Agregar un nuevo producto
 
 router
   .route("/:id")
-  .get(productsController.getProduct)
-  .put(productsController.updateProducts)
-  .delete(productsController.deleteProducts);
+  .get(productsController.getProduct) // Obtener un producto por ID
+  .put(upload.single('image'), productsController.updateProducts) // Actualizar un producto
+  .delete(productsController.deleteProducts); // Eliminar un producto
 
-export default router
+export default router;

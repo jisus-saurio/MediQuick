@@ -18,8 +18,8 @@ const HomeAdmind = () => {
       <p className="welcome-subtitle">Seleccione una opción para continuar:</p>
 
       <div className="button-group">
-        <button className="admin-button" onClick={() => navigate('/users')}>
-          Ver Usuarios
+        <button className="admin-button" onClick={() => navigate('/categories')}>
+          Ver Categorias
         </button>
         <button className="admin-button" onClick={() => navigate('/employees')}>
           Agregar Empleado

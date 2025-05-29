@@ -11,6 +11,7 @@ import AgregarProv from './pages/AgregarProv';
 import Employees from './pages/employees';
 import AddProducts from './pages/AddProducts';
 import HomeAdmind from './pages/HomeAdmind';
+import Categories from './pages/Categories';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 function App() {
@@ -47,6 +48,7 @@ function Content() {
         <Route path="/employees" element={<Employees />} />
         <Route path="/add_products" element={<AddProducts />} />
         <Route path="/HomeAdmind" element={<HomeAdmind />} />
+        <Route path="/categories" element={<Categories />} />
         
         {/* Rutas protegidas */}
       </Routes>

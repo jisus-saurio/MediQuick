@@ -24,21 +24,17 @@ const AddProducts = () => {
     fetchProveedores();
   }, []);
 
- const fetchProductos = async () => {
-  try {
-    const res = await fetch("/api/products");
-    const data = await res.json();
-
-    // Si el backend devuelve { products: [...] }
-    const productList = Array.isArray(data) ? data : data.products || [];
-
-    setProductos(productList);
-  } catch (error) {
-    console.error("Error al obtener productos:", error);
-    setProductos([]); // Para evitar que productos quede como null o undefined
-  }
-};
-
+  const fetchProductos = async () => {
+    try {
+      const res = await fetch("/api/products");
+      const data = await res.json();
+      const productList = Array.isArray(data) ? data : data.products || [];
+      setProductos(productList);
+    } catch (error) {
+      console.error("Error al obtener productos:", error);
+      setProductos([]);
+    }
+  };
 
   const fetchCategorias = async () => {
     try {
@@ -108,16 +104,19 @@ const AddProducts = () => {
       }
     }
 
-    const url = editingId
-      ? `/api/products/${editingId}`
-      : "/api/products";
+    const url = editingId ? `/api/products/${editingId}` : "/api/products";
     const method = editingId ? "PUT" : "POST";
 
     try {
-      await fetch(url, {
+      const response = await fetch(url, {
         method,
         body: formData,
       });
+
+      if (!response.ok) {
+        throw new Error('Error al guardar el producto: ' + response.statusText);
+      }
+
       await fetchProductos();
       closeModal();
       alert(editingId ? "Producto actualizado con éxito." : "Producto agregado con éxito.");
