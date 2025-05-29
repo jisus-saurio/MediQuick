@@ -3,7 +3,7 @@
 
 const ordersController = {};
 
-import  OrdersModels from "../models/Orders.js";
+import OrdersModels from "../models/Orders.js";
 
 // SELECT
 ordersController.getOrders = async (req, res) => {
@@ -13,7 +13,7 @@ ordersController.getOrders = async (req, res) => {
 
 // INSERT
 ordersController.createOrders = async (req, res) => {
-  const { user_id, products, total} = req.body;
+  const { user_id, products, total } = req.body;
 
   const newOrders = new OrdersModels({ user_id, products, total });
 

@@ -3,7 +3,7 @@
 
 const supplierController = {};
 
-import  SupplierModels from "../models/Suppliers.js";
+import SupplierModels from "../models/Suppliers.js";
 
 // SELECT
 supplierController.getSupplier = async (req, res) => {
@@ -13,7 +13,7 @@ supplierController.getSupplier = async (req, res) => {
 
 // INSERT
 supplierController.createSupplier = async (req, res) => {
-  const { name, contact, phone} = req.body;
+  const { name, contact, phone } = req.body;
 
   const newSupplier = new SupplierModels({ name, contact, phone });
 

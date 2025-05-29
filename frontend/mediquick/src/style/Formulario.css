@@ -2,17 +2,20 @@
 body {
     margin: 0;
     padding: 0;
-    background-image: url('/form.png'); /* Ruta corregida */
+    background-image: url('/form.png');
+    /* Ruta corregida */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed; /* Para que el fondo no se desplace al hacer scroll */
+    background-attachment: fixed;
+    /* Para que el fondo no se desplace al hacer scroll */
     font-family: sans-serif;
 }
 
 /* Contenedor principal */
 .form-container {
-    background-color: rgba(255, 255, 255, 0.9); /* Fondo semitransparente sobre la imagen de fondo */
+    background-color: rgba(255, 255, 255, 0.9);
+    /* Fondo semitransparente sobre la imagen de fondo */
     border-radius: 20px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     display: flex;
@@ -40,7 +43,8 @@ form {
     background-color: rgba(255, 255, 255, 0.85);
     padding: 2rem;
     border-radius: 15px;
-    backdrop-filter: blur(10px); /* efecto glassmorphism */
+    backdrop-filter: blur(10px);
+    /* efecto glassmorphism */
 }
 
 /* Campos */

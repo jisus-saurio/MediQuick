@@ -1,8 +1,10 @@
+//import statements
 import React, { useState, useEffect } from "react";
 import "../style/AddProductos.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// AddProducts componente
 const AddProducts = () => {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -26,6 +28,7 @@ const AddProducts = () => {
     fetchProveedores();
   }, []);
 
+  // Fetch products  
   const fetchProductos = async () => {
     try {
       const res = await fetch("/api/products");
@@ -38,6 +41,7 @@ const AddProducts = () => {
     }
   };
 
+  // Fetch categories 
   const fetchCategorias = async () => {
     try {
       const res = await fetch("/api/categories");
@@ -48,7 +52,7 @@ const AddProducts = () => {
       setCategorias([]);
     }
   };
-
+  // Fetch suppliers 
   const fetchProveedores = async () => {
     try {
       const res = await fetch("/api/suppliers");
@@ -60,6 +64,7 @@ const AddProducts = () => {
     }
   };
 
+  // Handle changes 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "image") {
@@ -69,6 +74,7 @@ const AddProducts = () => {
     }
   };
 
+  // Funciones para abrir y cerrar el modal para agregar/editar productos
   const openModal = (prod = null) => {
     if (prod) {
       setProducto({
@@ -98,6 +104,7 @@ const AddProducts = () => {
 
   const closeModal = () => setIsModalOpen(false);
 
+  // Funciones para guardar y eliminar productos
   const saveProducto = async () => {
     try {
       const formData = new FormData();
@@ -108,15 +115,18 @@ const AddProducts = () => {
       formData.append("categoryId", producto.categoryId);
       formData.append("supplierId", producto.supplierId);
 
+      // Si hay una imagen, agregarla al FormData
       if (producto.image) {
         formData.append("image", producto.image);
       }
 
+      // Determinar la URL y el método según si estamos editando o creando un producto
       const url = editingId
         ? `/api/products/${editingId}`
         : `/api/products`;
       const method = editingId ? "PUT" : "POST";
 
+      // Enviar la solicitud al servidor
       const response = await fetch(url, {
         method,
         body: formData,
@@ -124,6 +134,7 @@ const AddProducts = () => {
 
       const data = await response.json();
 
+      // Verificar si la respuesta es exitosa
       if (response.ok) {
         toast.success(editingId ? "Producto actualizado con éxito." : "Producto creado con éxito.");
         fetchProductos();
@@ -131,12 +142,13 @@ const AddProducts = () => {
       } else {
         toast.error(data.message || "Error guardando el producto");
       }
+      // Limpiar el estado del producto
     } catch (error) {
       console.error("Error al guardar producto:", error);
       toast.error("Error guardando el producto");
     }
   };
-
+  // Función para eliminar un producto
   const deleteProducto = async (id) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este producto?")) {
       try {
@@ -151,20 +163,24 @@ const AddProducts = () => {
     }
   };
 
+  // Función para alternar la expansión de las tarjetas de productos
   const toggleCard = (id) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  // Funciones para obtener el nombre de la categoría y proveedor
   const getNombreCategoria = (id) => {
     const cat = categorias.find((c) => c._id === id);
     return cat ? cat.name : id;
   };
 
+  // Función para obtener el nombre del proveedor
   const getNombreProveedor = (id) => {
     const prov = proveedores.find((p) => p._id === id);
     return prov ? prov.name : id;
   };
 
+  // Renderizar el componente
   return (
     <div className="productos-container">
       <ToastContainer />
@@ -200,6 +216,8 @@ const AddProducts = () => {
       <button className="btn-agregar" onClick={() => openModal()}>
         Agregar Producto
       </button>
+
+      {/* Modal para agregar/editar productos */}
 
       {isModalOpen && (
         <div className="modal">

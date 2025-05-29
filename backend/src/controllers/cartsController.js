@@ -3,7 +3,7 @@
 
 const cartsController = {};
 
-import  CartsModels from "../models/Carts.js";
+import CartsModels from "../models/Carts.js";
 
 // SELECT
 cartsController.getCarts = async (req, res) => {
@@ -13,7 +13,7 @@ cartsController.getCarts = async (req, res) => {
 
 // INSERT
 cartsController.createCarts = async (req, res) => {
-  const { user_id, products, discounts, total, status} = req.body;
+  const { user_id, products, discounts, total, status } = req.body;
 
   const newCarts = new CartsModels({ user_id, products, discounts, total, status });
 

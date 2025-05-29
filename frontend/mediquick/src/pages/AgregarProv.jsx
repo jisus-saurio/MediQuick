@@ -1,6 +1,8 @@
+//import statements
 import React from "react";
 import "../style/FormularioProveedor.css"; // Asegúrate de tener este archivo CSS
 
+// formulario de proveedores componente
 const FormularioProveedor = () => {
   return (
     <div className="formulario-container">

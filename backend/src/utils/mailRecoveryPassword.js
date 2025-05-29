@@ -1,11 +1,11 @@
-    import nodemailer from "nodemailer"
+import nodemailer from "nodemailer"
 
-import {config} from "../config.js"
+import { config } from "../config.js"
 
 //configurar quien lo envia 
 
 const transporter = nodemailer.createTransport({
-   host: "smtp.gmail.com",
+    host: "smtp.gmail.com",
     port: 465,
     secure: true,
     auth: {
@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async (to, subject, text, html) => {
     try {
-       const info = await transporter.sendMail({  
+        const info = await transporter.sendMail({
             from: '"Soporte Epa"<stanleyarce51@gmail.com>',
             to,
             subject,
@@ -141,4 +141,4 @@ const HTMLRecoveryEmail = (code) => {
 `;
 };
 
-export {sendEmail, HTMLRecoveryEmail};
+export { sendEmail, HTMLRecoveryEmail };

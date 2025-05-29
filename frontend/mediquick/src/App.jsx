@@ -1,3 +1,4 @@
+//import statements
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/login';
@@ -14,6 +15,7 @@ import HomeAdmind from './pages/HomeAdmind';
 import Categories from './pages/Categories';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
+// Main App component
 function App() {
   return (
     <Router>
@@ -49,7 +51,7 @@ function Content() {
         <Route path="/add_products" element={<AddProducts />} />
         <Route path="/HomeAdmind" element={<HomeAdmind />} />
         <Route path="/categories" element={<Categories />} />
-        
+
         {/* Rutas protegidas */}
       </Routes>
 

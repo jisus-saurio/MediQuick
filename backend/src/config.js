@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+//configuracion de la base de datos, servidor, JWT, admin, email y cloudinary
 export const config = {
   db: {
     URI: process.env.DB_URI,
@@ -12,7 +13,7 @@ export const config = {
 
   JWT: {
     SECRET: process.env.JWT_SECRET || "defaultSecret",
-    EXPIRES: process.env.JWT_EXPIRES || "1h", 
+    EXPIRES: process.env.JWT_EXPIRES || "1h",
   },
   adminf: {
     ADMIN_EMAIL: process.env.ADMIN_EMAIL,

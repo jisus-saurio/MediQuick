@@ -1,20 +1,24 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Componente Navbar
 function Navbar({ isAdmin }) {
   const [active, setActive] = useState("Home");
   const navigate = useNavigate();
 
+  // Maneja el clic en los elementos del menú
   const handleClick = (name) => {
     setActive(name);
     navigate(getPath(name));
   };
 
+  // Maneja el clic en el botón de login
   const handleLoginClick = () => {
     setActive("Login");
     navigate("/login");
   };
 
+  // Verifica si el usuario es administrador
   return (
     <nav style={styles.nav}>
       <div style={styles.menu}>
@@ -72,6 +76,7 @@ function Navbar({ isAdmin }) {
   );
 }
 
+// Función para obtener la ruta según el nombre del elemento del menú
 function getPath(name) {
   switch (name) {
     case "Home":
@@ -83,12 +88,12 @@ function getPath(name) {
     case "Contact":
       return "/Formulario";
     case "HomeAdmin":
-      return "/HomeAdmin";  
+      return "/HomeAdmin";
     default:
       return "/";
   }
 }
-
+// Estilos para el componente Navbar
 const styles = {
   nav: {
     display: "flex",

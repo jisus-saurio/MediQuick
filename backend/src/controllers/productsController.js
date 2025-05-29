@@ -2,8 +2,8 @@ import productsModel from "../models/Products.js";
 import { v2 as cloudinary } from "cloudinary";
 import multer from 'multer';
 import { config } from "../config.js";
-import Category from '../models/Categories.js'; 
-import Supplier from '../models/Suppliers.js'; 
+import Category from '../models/Categories.js';
+import Supplier from '../models/Suppliers.js';
 
 // Configurar Cloudinary
 cloudinary.config({

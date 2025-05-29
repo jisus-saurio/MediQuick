@@ -1,7 +1,9 @@
+//import statements
 import React from "react";
 import useCategories from "../hooks/useCategories";
 import "../style/Categories.css";
 
+// Categories componente
 const Categories = () => {
   const {
     categories,
@@ -19,6 +21,7 @@ const Categories = () => {
     handleAddClick,
   } = useCategories();
 
+  //return
   return (
     <div className="categories-container">
       <div className="title-wrapper">
@@ -48,6 +51,7 @@ const Categories = () => {
         ))}
       </ul>
 
+        // Botón para agregar una nueva categoría
       <div className="btn-agregar-wrapper">
         <button className="btn-agregar" onClick={handleAddClick}>
           + Agregar categoría

@@ -60,7 +60,8 @@
     transition: background 0.2s ease-in-out;
     width: 100%;
     max-width: 350px;
-    align-self: center; /* Centrado horizontal */
+    align-self: center;
+    /* Centrado horizontal */
 }
 
 .inputs input:focus {
@@ -72,7 +73,8 @@
 form.inputs {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centra todo horizontalmente */
+    align-items: center;
+    /* Centra todo horizontalmente */
     justify-content: center;
     gap: 1.2rem;
     margin: 0;
@@ -104,7 +106,8 @@ form.inputs {
     font-size: 1.1rem;
     cursor: pointer;
     transition: background 0.2s ease;
-    align-self: center; /* Centra el botón */
+    align-self: center;
+    /* Centra el botón */
 }
 
 .login-btn:hover {
