@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../style/AddProductos.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AddProducts = () => {
   const [productos, setProductos] = useState([]);
@@ -97,31 +99,41 @@ const AddProducts = () => {
   const closeModal = () => setIsModalOpen(false);
 
   const saveProducto = async () => {
-    const formData = new FormData();
-    for (let key in producto) {
-      if (producto[key] !== null) {
-        formData.append(key, producto[key]);
-      }
-    }
-
-    const url = editingId ? `/api/products/${editingId}` : "/api/products";
-    const method = editingId ? "PUT" : "POST";
-
     try {
+      const formData = new FormData();
+      formData.append("name", producto.name);
+      formData.append("description", producto.description);
+      formData.append("price", producto.price);
+      formData.append("stock", producto.stock);
+      formData.append("categoryId", producto.categoryId);
+      formData.append("supplierId", producto.supplierId);
+
+      if (producto.image) {
+        formData.append("image", producto.image);
+      }
+
+      const url = editingId
+        ? `/api/products/${editingId}`
+        : `/api/products`;
+      const method = editingId ? "PUT" : "POST";
+
       const response = await fetch(url, {
         method,
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error('Error al guardar el producto: ' + response.statusText);
-      }
+      const data = await response.json();
 
-      await fetchProductos();
-      closeModal();
-      alert(editingId ? "Producto actualizado con éxito." : "Producto agregado con éxito.");
+      if (response.ok) {
+        toast.success(editingId ? "Producto actualizado con éxito." : "Producto creado con éxito.");
+        fetchProductos();
+        closeModal();
+      } else {
+        toast.error(data.message || "Error guardando el producto");
+      }
     } catch (error) {
-      alert("Error al guardar el producto: " + error.message);
+      console.error("Error al guardar producto:", error);
+      toast.error("Error guardando el producto");
     }
   };
 
@@ -132,9 +144,9 @@ const AddProducts = () => {
           method: "DELETE",
         });
         await fetchProductos();
-        alert("Producto eliminado con éxito.");
+        toast.success("Producto eliminado con éxito.");
       } catch (error) {
-        alert("Error al eliminar el producto: " + error.message);
+        toast.error("Error al eliminar el producto: " + error.message);
       }
     }
   };
@@ -155,6 +167,7 @@ const AddProducts = () => {
 
   return (
     <div className="productos-container">
+      <ToastContainer />
       <h1>Lista de Productos</h1>
 
       <div className="productos-grid">
