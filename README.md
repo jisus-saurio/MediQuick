@@ -10,6 +10,7 @@ MediQuick fue fundada en 2025 por un grupo de estudiantes quienes identificaron 
 - **Carrito de Compras**: Gestión eficiente de productos seleccionados
 - **Panel de Usuario**: Historial de compras y gestión de perfil
 
+
 ## Tecnologías Utilizadas
 
 ### Frontend
