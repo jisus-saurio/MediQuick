@@ -65,7 +65,8 @@ const Employees = () => {
         </button>
       </div>
 
-          // Modal para agregar/editar empleados
+         {// Modal para agregar/editar empleados
+         } 
       {isModalOpen && (
         <div className="modal">
           <div className="modal-content">

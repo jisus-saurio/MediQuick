@@ -1,9 +1,16 @@
+/* General */
+* {
+  box-sizing: border-box;
+}
+
 body,
 html {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
+  overflow-x: hidden;
+  font-family: sans-serif;
 }
 
 /* Contenedor principal */
@@ -18,17 +25,13 @@ html {
   overflow-x: hidden;
 }
 
-
 /* Carrusel */
 .banner {
   width: 100%;
   max-width: 1400px;
-  /* Opcional para que no se estire demasiado en pantallas muy grandes */
   height: 350px;
-  /* Reducido para hacerlo más pequeño */
   background-color: #e6e6e6;
   border-radius: 20px;
-  /* Bordes redondeados */
   margin-bottom: 40px;
   position: relative;
   overflow: hidden;
@@ -115,4 +118,169 @@ html {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* About Us Section */
+.about-us {
+  padding: 4rem 2rem;
+  text-align: center;
+  background-image: url('/About.png');
+}
+
+.about-banner h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.about-description {
+  max-width: 600px;
+  margin: 0 auto;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.text-orange {
+  color: #f97316;
+}
+
+.text-blue {
+  color: #3b82f6;
+}
+
+.image-layout {
+  margin-top: 4rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  justify-items: center;
+}
+
+.img-box {
+  background-color: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+}
+
+.rect.tall {
+  width: 100px;
+  height: 200px;
+  background-image: url('ruta-a-tu-imagen1.jpg');
+}
+
+.rect.horizontal {
+  grid-column: span 2;
+  width: 100%;
+  height: 80px;
+  background-image: url('ruta-a-tu-imagen2.jpg');
+}
+
+.circle.large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-image: url('ruta-a-tu-imagen3.jpg');
+}
+
+.circle.small {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-image: url('ruta-a-tu-imagen4.jpg');
+}
+
+/* MEDIA QUERIES */
+
+/* Tablets (<=768px) */
+@media (max-width: 768px) {
+  .banner {
+    height: 250px;
+    border-radius: 15px;
+  }
+
+  .section-title {
+    font-size: 26px;
+  }
+
+  .circle {
+    width: 140px;
+    height: 140px;
+  }
+
+  .card {
+    width: 200px;
+    height: 220px;
+  }
+
+  .about-banner h1 {
+    font-size: 2rem;
+  }
+
+  .image-layout {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rect.horizontal {
+    grid-column: span 2;
+  }
+}
+
+/* Móviles (<=480px) */
+@media (max-width: 480px) {
+  html, body {
+    overflow-x: hidden;
+  }
+
+  .home-container {
+    padding: 20px 10px;
+  }
+
+  .banner {
+    height: 180px;
+    margin: 0 10px 30px 10px;
+    border-radius: 10px;
+  }
+
+  .section-title {
+    font-size: 22px;
+    margin: 30px 0 15px 0;
+  }
+
+  .icons,
+  .cards {
+    padding: 0 10px;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  .circle {
+    width: 100px;
+    height: 100px;
+  }
+
+  .card {
+    width: 150px;
+    height: 170px;
+  }
+
+  .about-banner h1 {
+    font-size: 1.5rem;
+  }
+
+  .about-description {
+    font-size: 1rem;
+  }
+
+  .image-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .rect.horizontal {
+    grid-column: span 1;
+  }
 }
