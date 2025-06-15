@@ -4,7 +4,6 @@ import "../style/AddProductos.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// AddProducts componente
 const AddProducts = () => {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -28,20 +27,17 @@ const AddProducts = () => {
     fetchProveedores();
   }, []);
 
-  // Fetch products  
   const fetchProductos = async () => {
     try {
       const res = await fetch("/api/products");
       const data = await res.json();
-      const productList = Array.isArray(data) ? data : data.products || [];
-      setProductos(productList);
+      setProductos(Array.isArray(data) ? data : data.products || []);
     } catch (error) {
       console.error("Error al obtener productos:", error);
       setProductos([]);
     }
   };
 
-  // Fetch categories 
   const fetchCategorias = async () => {
     try {
       const res = await fetch("/api/categories");
@@ -52,7 +48,7 @@ const AddProducts = () => {
       setCategorias([]);
     }
   };
-  // Fetch suppliers 
+
   const fetchProveedores = async () => {
     try {
       const res = await fetch("/api/suppliers");
@@ -64,7 +60,6 @@ const AddProducts = () => {
     }
   };
 
-  // Handle changes 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "image") {
@@ -74,7 +69,6 @@ const AddProducts = () => {
     }
   };
 
-  // Funciones para abrir y cerrar el modal para agregar/editar productos
   const openModal = (prod = null) => {
     if (prod) {
       setProducto({
@@ -104,8 +98,23 @@ const AddProducts = () => {
 
   const closeModal = () => setIsModalOpen(false);
 
-  // Funciones para guardar y eliminar productos
+  const validarProducto = () => {
+    const { name, description, price, stock, categoryId, supplierId, image } = producto;
+
+    if (!name.trim()) return toast.error("El nombre es obligatorio.");
+    if (!description.trim()) return toast.error("La descripción es obligatoria.");
+    if (!price || isNaN(price) || Number(price) <= 0) return toast.error("Precio inválido.");
+    if (!stock || isNaN(stock) || Number(stock) < 0) return toast.error("Stock inválido.");
+    if (!categoryId) return toast.error("Debe seleccionar una categoría.");
+    if (!supplierId) return toast.error("Debe seleccionar un proveedor.");
+    if (!editingId && !image) return toast.error("Debe agregar una imagen.");
+
+    return true;
+  };
+
   const saveProducto = async () => {
+    if (!validarProducto()) return;
+
     try {
       const formData = new FormData();
       formData.append("name", producto.name);
@@ -114,19 +123,13 @@ const AddProducts = () => {
       formData.append("stock", producto.stock);
       formData.append("categoryId", producto.categoryId);
       formData.append("supplierId", producto.supplierId);
-
-      // Si hay una imagen, agregarla al FormData
       if (producto.image) {
         formData.append("image", producto.image);
       }
 
-      // Determinar la URL y el método según si estamos editando o creando un producto
-      const url = editingId
-        ? `/api/products/${editingId}`
-        : `/api/products`;
+      const url = editingId ? `/api/products/${editingId}` : `/api/products`;
       const method = editingId ? "PUT" : "POST";
 
-      // Enviar la solicitud al servidor
       const response = await fetch(url, {
         method,
         body: formData,
@@ -134,7 +137,6 @@ const AddProducts = () => {
 
       const data = await response.json();
 
-      // Verificar si la respuesta es exitosa
       if (response.ok) {
         toast.success(editingId ? "Producto actualizado con éxito." : "Producto creado con éxito.");
         fetchProductos();
@@ -142,13 +144,12 @@ const AddProducts = () => {
       } else {
         toast.error(data.message || "Error guardando el producto");
       }
-      // Limpiar el estado del producto
     } catch (error) {
       console.error("Error al guardar producto:", error);
       toast.error("Error guardando el producto");
     }
   };
-  // Función para eliminar un producto
+
   const deleteProducto = async (id) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este producto?")) {
       try {
@@ -163,24 +164,20 @@ const AddProducts = () => {
     }
   };
 
-  // Función para alternar la expansión de las tarjetas de productos
   const toggleCard = (id) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  // Funciones para obtener el nombre de la categoría y proveedor
   const getNombreCategoria = (id) => {
     const cat = categorias.find((c) => c._id === id);
     return cat ? cat.name : id;
   };
 
-  // Función para obtener el nombre del proveedor
   const getNombreProveedor = (id) => {
     const prov = proveedores.find((p) => p._id === id);
     return prov ? prov.name : id;
   };
 
-  // Renderizar el componente
   return (
     <div className="productos-container">
       <ToastContainer />
@@ -217,52 +214,24 @@ const AddProducts = () => {
         Agregar Producto
       </button>
 
-      {/* Modal para agregar/editar productos */}
-
       {isModalOpen && (
         <div className="modal">
           <div className="modal-content">
             <h2>{editingId ? "Editar" : "Agregar"} Producto</h2>
-            <input
-              name="name"
-              placeholder="Nombre"
-              value={producto.name}
-              onChange={handleChange}
-            />
-            <input
-              name="description"
-              placeholder="Descripción"
-              value={producto.description}
-              onChange={handleChange}
-            />
-            <input
-              name="price"
-              placeholder="Precio"
-              type="number"
-              value={producto.price}
-              onChange={handleChange}
-            />
-            <input
-              name="stock"
-              placeholder="Stock"
-              type="number"
-              value={producto.stock}
-              onChange={handleChange}
-            />
+            <input name="name" placeholder="Nombre" value={producto.name} onChange={handleChange} />
+            <input name="description" placeholder="Descripción" value={producto.description} onChange={handleChange} />
+            <input name="price" placeholder="Precio" type="number" value={producto.price} onChange={handleChange} />
+            <input name="stock" placeholder="Stock" type="number" value={producto.stock} onChange={handleChange} />
             <select name="categoryId" value={producto.categoryId} onChange={handleChange}>
               <option value="">Seleccione categoría</option>
               {categorias.map((cat) => (
-                <option key={cat._id} value={cat._id}>
-                  {cat.name}
-                </option>
+                <option key={cat._id} value={cat._id}>{cat.name}</option>
               ))}
             </select>
             <select name="supplierId" value={producto.supplierId} onChange={handleChange}>
               <option value="">Seleccione proveedor</option>
               {proveedores.map((prov) => (
-                <option key={prov._id} value={prov._id}>
-                  {prov.name}
-                </option>
+                <option key={prov._id} value={prov._id}>{prov.name}</option>
               ))}
             </select>
             <input type="file" name="image" onChange={handleChange} />

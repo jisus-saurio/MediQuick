@@ -21,7 +21,7 @@ const Categories = () => {
     handleAddClick,
   } = useCategories();
 
-  //return
+  
   return (
     <div className="categories-container">
       <div className="title-wrapper">
@@ -40,10 +40,20 @@ const Categories = () => {
             <h2>{category.name}</h2>
             <p>{category.description}</p>
             <div className="card-actions">
-              <button onClick={(e) => { e.stopPropagation(); handleCardClick(category); }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCardClick(category);
+                }}
+              >
                 Editar
               </button>
-              <button onClick={(e) => { e.stopPropagation(); handleDelete(category._id); }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(category._id);
+                }}
+              >
                 Eliminar
               </button>
             </div>
@@ -51,7 +61,7 @@ const Categories = () => {
         ))}
       </ul>
 
-        // Botón para agregar una nueva categoría
+      {/* Botón para agregar una nueva categoría */}
       <div className="btn-agregar-wrapper">
         <button className="btn-agregar" onClick={handleAddClick}>
           + Agregar categoría
@@ -62,7 +72,16 @@ const Categories = () => {
         <div className="modal">
           <div className="modal-content">
             <h2>{selectedCategory ? "Editar Categoría" : "Agregar Categoría"}</h2>
-            <form onSubmit={handleSubmit}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!name.trim() || !description.trim()) {
+                  alert("Por favor, completa todos los campos.");
+                  return;
+                }
+                handleSubmit(e);
+              }}
+            >
               <input
                 type="text"
                 placeholder="Nombre de la categoría"
