@@ -1,3 +1,4 @@
+//import statements
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/login';
@@ -12,8 +13,10 @@ import Employees from './pages/employees';
 import AddProducts from './pages/AddProducts';
 import HomeAdmind from './pages/HomeAdmind';
 import Categories from './pages/Categories';
+import Cart from './pages/Cart';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
+// Main App component
 function App() {
   return (
     <Router>
@@ -35,7 +38,7 @@ function Content() {
 
   return (
     <>
-      {shouldShowNav && <Navbar />}
+      {shouldShowNav && <Navbar isAdmin={User?.role === 'admin'} />}
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -49,7 +52,8 @@ function Content() {
         <Route path="/add_products" element={<AddProducts />} />
         <Route path="/HomeAdmind" element={<HomeAdmind />} />
         <Route path="/categories" element={<Categories />} />
-        
+        <Route path="/cart" element={<Cart />} />
+
         {/* Rutas protegidas */}
       </Routes>
 
