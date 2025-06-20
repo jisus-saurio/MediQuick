@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+// Custom hook para manejar las categorías
 const useCategories = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -8,6 +9,7 @@ const useCategories = () => {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
+  // Función para obtener las categorías desde la API
   const fetchCategories = async () => {
     try {
       const response = await fetch("/api/categories");
@@ -19,10 +21,12 @@ const useCategories = () => {
     }
   };
 
+  // Efecto para cargar las categorías al montar el componente
   useEffect(() => {
     fetchCategories();
   }, []);
 
+  // Función para manejar el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     const method = selectedCategory ? "PUT" : "POST";
@@ -30,6 +34,7 @@ const useCategories = () => {
       ? `/api/categories/${selectedCategory._id}`
       : "/api/categories";
 
+    // Validar campos  
     try {
       const response = await fetch(url, {
         method,
@@ -37,6 +42,7 @@ const useCategories = () => {
         body: JSON.stringify({ name, description }),
       });
 
+      // Verificar si la respuesta es exitosa
       if (!response.ok) {
         throw new Error(
           selectedCategory
@@ -45,6 +51,7 @@ const useCategories = () => {
         );
       }
 
+      // Limpiar el estado del formulario
       setName("");
       setDescription("");
       setSelectedCategory(null);
@@ -55,6 +62,7 @@ const useCategories = () => {
     }
   };
 
+  // Función para manejar la eliminación de una categoría
   const handleDelete = async (id) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar esta categoría?")) {
       try {
@@ -69,6 +77,7 @@ const useCategories = () => {
     }
   };
 
+  // Función para manejar el clic en una tarjeta de categoría
   const handleCardClick = (category) => {
     setSelectedCategory(category);
     setName(category.name);
@@ -76,6 +85,7 @@ const useCategories = () => {
     setShowModal(true);
   };
 
+  // Función para manejar el clic en el botón "Agregar categoría"
   const handleAddClick = () => {
     setSelectedCategory(null);
     setName("");
@@ -83,6 +93,7 @@ const useCategories = () => {
     setShowModal(true);
   };
 
+  // Retornar los valores y funciones necesarias para el componente
   return {
     categories,
     selectedCategory,

@@ -1,5 +1,6 @@
 import React from 'react';
 
+// Footer componente
 function Footer() {
   const footerStyles = {
     container: {
@@ -33,6 +34,7 @@ function Footer() {
     },
   };
 
+  // Renderiza el footer
   return (
     <footer style={footerStyles.container}>
       <div style={footerStyles.title}>MediQuick - Tu farmacia en línea</div>

@@ -3,7 +3,7 @@
 
 const employeesController = {};
 
-import  EmployeesModels from "../models/Employees.js";
+import EmployeesModels from "../models/Employees.js";
 
 // SELECT
 employeesController.getEmployees = async (req, res) => {
@@ -13,7 +13,7 @@ employeesController.getEmployees = async (req, res) => {
 
 // INSERT
 employeesController.createEmployees = async (req, res) => {
-  const { name, surname, email, position, nurse_credential} = req.body;
+  const { name, surname, email, position, nurse_credential } = req.body;
 
   const newEmployees = new EmployeesModels({ name, surname, email, position, nurse_credential });
 

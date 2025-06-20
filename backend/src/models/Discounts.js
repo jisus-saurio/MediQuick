@@ -6,6 +6,7 @@ description
     expiration_date
 */
 
+
 import { Schema, model } from "mongoose";
 
 const discountsSchema = new Schema({

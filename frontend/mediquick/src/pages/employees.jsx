@@ -1,7 +1,9 @@
+//import statements
 import React, { useEffect } from "react";
 import "../style/Employees.css";
 import { useEmployees } from "../hooks/useEmployees";
 
+// Employees componente
 const Employees = () => {
   const {
     employees,
@@ -26,6 +28,7 @@ const Employees = () => {
     }
   }, [isModalOpen]);
 
+  // Render the component
   return (
     <div className="empleados-container">
       <div className="contenido">
@@ -62,6 +65,8 @@ const Employees = () => {
         </button>
       </div>
 
+         {// Modal para agregar/editar empleados
+         } 
       {isModalOpen && (
         <div className="modal">
           <div className="modal-content">

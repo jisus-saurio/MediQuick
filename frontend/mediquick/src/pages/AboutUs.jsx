@@ -1,6 +1,8 @@
+//imports
 import React from 'react';
 import '../style/AboutUs.css';
 
+// AboutUs componente
 const AboutUs = () => {
   return (
     <section className="about-us">

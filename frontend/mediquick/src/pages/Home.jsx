@@ -27,7 +27,7 @@ function Home() {
 
   return (
     <div className="home-container"> {/* Contenedor principal de la página Home */}
-      
+
       {/* Carrusel de banners */}
       <section className="banner">
         <img src={images[currentImage]} alt="Banner" className="banner-image" />

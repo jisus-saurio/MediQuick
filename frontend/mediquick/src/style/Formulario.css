@@ -1,18 +1,17 @@
-/* Fondo general de la página */
-body {
+.pagina-formulario {
     margin: 0;
     padding: 0;
-    background-image: url('/form.png'); /* Ruta corregida */
+    background-image: url('/fondoP.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed; /* Para que el fondo no se desplace al hacer scroll */
+    background-attachment: fixed;
     font-family: sans-serif;
 }
 
 /* Contenedor principal */
 .form-container {
-    background-color: rgba(255, 255, 255, 0.9); /* Fondo semitransparente sobre la imagen de fondo */
+    background-color: rgba(255, 255, 255, 0.9);
     border-radius: 20px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     display: flex;
@@ -24,14 +23,12 @@ body {
     padding: 2rem;
 }
 
-/* Diseño responsivo */
 @media (min-width: 768px) {
     .form-container {
         flex-direction: row;
     }
 }
 
-/* Formulario */
 form {
     flex: 1;
     display: flex;
@@ -40,10 +37,9 @@ form {
     background-color: rgba(255, 255, 255, 0.85);
     padding: 2rem;
     border-radius: 15px;
-    backdrop-filter: blur(10px); /* efecto glassmorphism */
+    backdrop-filter: blur(10px);
 }
 
-/* Campos */
 input,
 textarea {
     width: 100%;
@@ -53,12 +49,10 @@ textarea {
     font-size: 1rem;
 }
 
-/* textarea: comportamiento de redimensionado */
 textarea {
     resize: vertical;
 }
 
-/* Botón */
 button[type="submit"] {
     background-color: #f97316;
     color: white;
@@ -79,7 +73,6 @@ button[type="submit"]:focus {
     outline-offset: 2px;
 }
 
-/* Ajuste para pantallas pequeñas */
 @media (max-width: 480px) {
     .form-container {
         padding: 1rem;
@@ -89,3 +82,8 @@ button[type="submit"]:focus {
         padding: 1rem;
     }
 }
+
+/* Navbar fijo */
+
+
+/* Espacio para navbar fijo */

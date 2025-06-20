@@ -3,7 +3,7 @@
 
 const discountsController = {};
 
-import  DiscountsModels from "../models/Discounts.js";
+import DiscountsModels from "../models/Discounts.js";
 
 // SELECT
 discountsController.getDiscounts = async (req, res) => {
@@ -13,7 +13,7 @@ discountsController.getDiscounts = async (req, res) => {
 
 // INSERT
 discountsController.createDiscounts = async (req, res) => {
-  const { name, surname, email, position, nurse_credential} = req.body;
+  const { name, surname, email, position, nurse_credential } = req.body;
 
   const newEmployees = new DiscountsModels({ name, surname, email, position, nurse_credential });
 

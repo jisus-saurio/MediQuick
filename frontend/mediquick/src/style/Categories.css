@@ -6,7 +6,8 @@
   padding: 24px;
   max-width: 900px;
   margin: 0 auto;
-  background-image: url("../assets/background.jpg"); /* Reemplaza con tu imagen */
+  background-image: url("../assets/background.jpg");
+  /* Reemplaza con tu imagen */
   background-size: cover;
   background-position: center;
   min-height: 100vh;
@@ -45,7 +46,8 @@
 
 /* Tarjetas */
 .category-card {
-  background: rgba(255, 255, 255, 0.8); /* Fondo translúcido */
+  background: rgba(255, 255, 255, 0.8);
+  /* Fondo translúcido */
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 16px;

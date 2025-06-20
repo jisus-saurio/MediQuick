@@ -30,7 +30,8 @@
   padding-right: 8px;
   margin-bottom: 32px;
   list-style: none;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .categories-list::-webkit-scrollbar {

@@ -11,12 +11,13 @@
 .sidebar-placeholder {
   width: 100px;
   /* Reducir altura para que no ocupe toda la pantalla */
-  height: 80vh; 
+  height: 80vh;
   background-color: #d9d9d9;
   border-radius: 15px;
   margin: 40px 20px;
   box-shadow: 2px 2px 5px #999;
-  align-self: flex-start; /* Que no estire todo verticalmente */
+  align-self: flex-start;
+  /* Que no estire todo verticalmente */
 }
 
 .form-content {
@@ -37,23 +38,29 @@
 /* Formulario */
 .form-box {
   background-color: #d9d9d9;
-  padding: 40px;        /* Más padding para hacerlo más grande */
+  padding: 40px;
+  /* Más padding para hacerlo más grande */
   border-radius: 20px;
   box-shadow: 3px 3px 7px #888;
   display: flex;
   flex-direction: column;
-  gap: 20px;           /* Más espacio entre campos */
-  width: 450px;        /* Aumentamos el ancho */
-  max-width: 90vw;     /* Para que se adapte en pantallas pequeñas */
+  gap: 20px;
+  /* Más espacio entre campos */
+  width: 450px;
+  /* Aumentamos el ancho */
+  max-width: 90vw;
+  /* Para que se adapte en pantallas pequeñas */
 }
 
 /* Campos */
 .form-box input {
-  padding: 14px;       /* Inputs más grandes */
+  padding: 14px;
+  /* Inputs más grandes */
   border-radius: 10px;
   border: none;
   outline: none;
-  font-size: 16px;     /* Texto un poco más grande */
+  font-size: 16px;
+  /* Texto un poco más grande */
 }
 
 /* Botón */
