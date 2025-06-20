@@ -60,6 +60,22 @@ function Navbar({ isAdmin }) {
               </div>
             ))}
 
+            {/* Nuevo enlace al historial de compras */}
+            <div
+              onClick={() => handleClick("Order History")}
+              style={styles.menuItem}
+            >
+              <span
+                style={{
+                  ...styles.link,
+                  color: active === "Order History" ? "#ff6600" : "#004466",
+                }}
+              >
+                Mis Compras
+              </span>
+              {active === "Order History" && <div style={styles.underline}></div>}
+            </div>
+
             {isAdmin && (
               <div
                 onClick={() => handleClick("HomeAdmin")}
@@ -104,6 +120,15 @@ function Navbar({ isAdmin }) {
               {item}
             </div>
           ))}
+          
+          {/* Historial de compras en menú móvil */}
+          <div
+            onClick={() => handleClick("Order History")}
+            style={styles.overlayItem}
+          >
+            Mis Compras
+          </div>
+          
           {isAdmin && (
             <div
               onClick={() => handleClick("HomeAdmin")}
@@ -134,6 +159,8 @@ function getPath(name) {
       return "/aboutUs";
     case "Contact":
       return "/Formulario";
+    case "Order History":
+      return "/OrderHistory";
     case "HomeAdmin":
       return "/HomeAdmin";
     case "Cart":

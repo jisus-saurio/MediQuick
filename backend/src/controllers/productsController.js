@@ -133,6 +133,54 @@ productsController.getProduct = async (req, res) => {
     res.status(500).json({ error: "Error al obtener producto" });
   }
 };
+productsController.updateProductStock = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { quantityToDeduct } = req.body;
+    
+    if (!quantityToDeduct || quantityToDeduct <= 0) {
+      return res.status(400).json({ message: 'Cantidad a deducir debe ser mayor a 0' });
+    }
+    
+    const product = await productsModel.findById(id);
+    
+    if (!product) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+    
+    if (product.stock < quantityToDeduct) {
+      return res.status(400).json({ 
+        message: 'Stock insuficiente', 
+        availableStock: product.stock,
+        requestedQuantity: quantityToDeduct
+      });
+    }
+    
+    // Actualizar stock
+    const updatedProduct = await productsModel.findByIdAndUpdate(
+      id,
+      { 
+        $inc: { stock: -quantityToDeduct }
+      },
+      { new: true }
+    );
+    
+    res.json({
+      message: 'Stock actualizado exitosamente',
+      product: {
+        id: updatedProduct._id,
+        name: updatedProduct.name,
+        previousStock: updatedProduct.stock + quantityToDeduct,
+        currentStock: updatedProduct.stock,
+        quantityDeducted: quantityToDeduct
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error actualizando stock:', error);
+    res.status(500).json({ message: 'Error actualizando stock', error: error.message });
+  }
+};
 
 // Exportar el controlador y el middleware de multer
 export { upload, productsController };

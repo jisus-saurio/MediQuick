@@ -13,6 +13,7 @@ import Employees from './pages/employees';
 import AddProducts from './pages/AddProducts';
 import HomeAdmind from './pages/HomeAdmind';
 import Categories from './pages/Categories';
+import OrderHistory from './pages/OrderHistory';
 import Cart from './pages/Cart';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -52,6 +53,7 @@ function Content() {
         <Route path="/add_products" element={<AddProducts />} />
         <Route path="/HomeAdmind" element={<HomeAdmind />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/OrderHistory" element={<OrderHistory />} />
         <Route path="/cart" element={<Cart />} />
 
         {/* Rutas protegidas */}
