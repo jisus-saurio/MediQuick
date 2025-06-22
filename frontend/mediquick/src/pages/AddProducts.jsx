@@ -27,6 +27,12 @@ const AddProducts = () => {
     fetchProveedores();
   }, []);
 
+  // Función para notificar cambios a otros componentes
+  const notifyProductChange = () => {
+    // Disparar evento personalizado para notificar cambios
+    window.dispatchEvent(new CustomEvent('productsUpdated'));
+  };
+
   const fetchProductos = async () => {
     try {
       const res = await fetch("/api/products");
@@ -139,7 +145,8 @@ const AddProducts = () => {
 
       if (response.ok) {
         toast.success(editingId ? "Producto actualizado con éxito." : "Producto creado con éxito.");
-        fetchProductos();
+        await fetchProductos();
+        notifyProductChange(); // Notificar cambios
         closeModal();
       } else {
         toast.error(data.message || "Error guardando el producto");
@@ -153,12 +160,20 @@ const AddProducts = () => {
   const deleteProducto = async (id) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este producto?")) {
       try {
-        await fetch(`/api/products/${id}`, {
+        const response = await fetch(`/api/products/${id}`, {
           method: "DELETE",
         });
-        await fetchProductos();
-        toast.success("Producto eliminado con éxito.");
+
+        if (response.ok) {
+          await fetchProductos();
+          notifyProductChange(); // Notificar cambios
+          toast.success("Producto eliminado con éxito.");
+        } else {
+          const data = await response.json();
+          toast.error(data.message || "Error al eliminar el producto");
+        }
       } catch (error) {
+        console.error("Error al eliminar producto:", error);
         toast.error("Error al eliminar el producto: " + error.message);
       }
     }
@@ -191,22 +206,33 @@ const AddProducts = () => {
               className={`producto-card ${expandedId === prod._id ? "expanded" : ""}`}
               onClick={() => toggleCard(prod._id)}
             >
-              <img src={prod.image} alt={prod.name} className="producto-img" />
+              <img 
+                src={prod.image} 
+                alt={prod.name} 
+                className="producto-img"
+                onError={(e) => {
+                  e.target.src = '/placeholder-image.jpg'; // Imagen por defecto si falla
+                }}
+              />
               <h3>{prod.name}</h3>
               <p>${prod.price}</p>
 
               <div className="detalles" onClick={(e) => e.stopPropagation()}>
-                <p>{prod.description}</p>
-                <p>Stock: {prod.stock}</p>
-                <p>Categoría: {getNombreCategoria(prod.categoryId?._id || prod.categoryId)}</p>
-                <p>Proveedor: {getNombreProveedor(prod.supplierId?._id || prod.supplierId)}</p>
-                <button onClick={() => openModal(prod)}>Editar</button>
-                <button onClick={() => deleteProducto(prod._id)}>Eliminar</button>
+                <p><strong>Descripción:</strong> {prod.description}</p>
+                <p><strong>Stock:</strong> {prod.stock} unidades</p>
+                <p><strong>Categoría:</strong> {getNombreCategoria(prod.categoryId?._id || prod.categoryId)}</p>
+                <p><strong>Proveedor:</strong> {getNombreProveedor(prod.supplierId?._id || prod.supplierId)}</p>
+                <div className="card-buttons">
+                  <button className="edit-btn" onClick={() => openModal(prod)}>Editar</button>
+                  <button className="delete-btn" onClick={() => deleteProducto(prod._id)}>Eliminar</button>
+                </div>
               </div>
             </div>
           ))
         ) : (
-          <p>No hay productos disponibles.</p>
+          <div className="no-products">
+            <p>No hay productos disponibles.</p>
+          </div>
         )}
       </div>
 
@@ -218,26 +244,71 @@ const AddProducts = () => {
         <div className="modal">
           <div className="modal-content">
             <h2>{editingId ? "Editar" : "Agregar"} Producto</h2>
-            <input name="name" placeholder="Nombre" value={producto.name} onChange={handleChange} />
-            <input name="description" placeholder="Descripción" value={producto.description} onChange={handleChange} />
-            <input name="price" placeholder="Precio" type="number" value={producto.price} onChange={handleChange} />
-            <input name="stock" placeholder="Stock" type="number" value={producto.stock} onChange={handleChange} />
-            <select name="categoryId" value={producto.categoryId} onChange={handleChange}>
-              <option value="">Seleccione categoría</option>
-              {categorias.map((cat) => (
-                <option key={cat._id} value={cat._id}>{cat.name}</option>
-              ))}
-            </select>
-            <select name="supplierId" value={producto.supplierId} onChange={handleChange}>
-              <option value="">Seleccione proveedor</option>
-              {proveedores.map((prov) => (
-                <option key={prov._id} value={prov._id}>{prov.name}</option>
-              ))}
-            </select>
-            <input type="file" name="image" onChange={handleChange} />
+            <form onSubmit={(e) => e.preventDefault()}>
+              <input 
+                name="name" 
+                placeholder="Nombre del producto" 
+                value={producto.name} 
+                onChange={handleChange}
+                required
+              />
+              <textarea 
+                name="description" 
+                placeholder="Descripción del producto" 
+                value={producto.description} 
+                onChange={handleChange}
+                rows={3}
+                required
+              />
+              <input 
+                name="price" 
+                placeholder="Precio" 
+                type="number" 
+                step="0.01"
+                min="0"
+                value={producto.price} 
+                onChange={handleChange}
+                required
+              />
+              <input 
+                name="stock" 
+                placeholder="Cantidad en stock" 
+                type="number" 
+                min="0"
+                value={producto.stock} 
+                onChange={handleChange}
+                required
+              />
+              <select name="categoryId" value={producto.categoryId} onChange={handleChange} required>
+                <option value="">Seleccione categoría</option>
+                {categorias.map((cat) => (
+                  <option key={cat._id} value={cat._id}>{cat.name}</option>
+                ))}
+              </select>
+              <select name="supplierId" value={producto.supplierId} onChange={handleChange} required>
+                <option value="">Seleccione proveedor</option>
+                {proveedores.map((prov) => (
+                  <option key={prov._id} value={prov._id}>{prov.name}</option>
+                ))}
+              </select>
+              <div className="file-input-container">
+                <input 
+                  type="file" 
+                  name="image" 
+                  onChange={handleChange}
+                  accept="image/*"
+                  id="image-upload"
+                />
+                <label htmlFor="image-upload" className="file-label">
+                  {producto.image ? producto.image.name : (editingId ? "Cambiar imagen (opcional)" : "Seleccionar imagen")}
+                </label>
+              </div>
+            </form>
             <div className="modal-buttons">
-              <button onClick={saveProducto}>Guardar</button>
-              <button onClick={closeModal}>Cancelar</button>
+              <button className="save-btn" onClick={saveProducto}>
+                {editingId ? "Actualizar" : "Guardar"}
+              </button>
+              <button className="cancel-btn" onClick={closeModal}>Cancelar</button>
             </div>
           </div>
         </div>

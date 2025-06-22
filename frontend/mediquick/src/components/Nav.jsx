@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import CartIcon from "./CartIcon";
 
 function Navbar({ isAdmin }) {
   const [active, setActive] = useState("Home");
@@ -59,6 +60,22 @@ function Navbar({ isAdmin }) {
               </div>
             ))}
 
+            {/* Nuevo enlace al historial de compras */}
+            <div
+              onClick={() => handleClick("Order History")}
+              style={styles.menuItem}
+            >
+              <span
+                style={{
+                  ...styles.link,
+                  color: active === "Order History" ? "#ff6600" : "#004466",
+                }}
+              >
+                Mis Compras
+              </span>
+              {active === "Order History" && <div style={styles.underline}></div>}
+            </div>
+
             {isAdmin && (
               <div
                 onClick={() => handleClick("HomeAdmin")}
@@ -78,11 +95,14 @@ function Navbar({ isAdmin }) {
           </div>
         )}
 
-        <div onClick={handleLoginClick} style={styles.loginContainer}>
-          <button style={styles.loginButton}>Login</button>
-          {active === "Login" && (
-            <div style={{ ...styles.underline, marginTop: "5px" }}></div>
-          )}
+        <div style={styles.rightSection}>
+          <CartIcon />
+          <div onClick={handleLoginClick} style={styles.loginContainer}>
+            <button style={styles.loginButton}>Login</button>
+            {active === "Login" && (
+              <div style={{ ...styles.underline, marginTop: "5px" }}></div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -100,6 +120,15 @@ function Navbar({ isAdmin }) {
               {item}
             </div>
           ))}
+          
+          {/* Historial de compras en menú móvil */}
+          <div
+            onClick={() => handleClick("Order History")}
+            style={styles.overlayItem}
+          >
+            Mis Compras
+          </div>
+          
           {isAdmin && (
             <div
               onClick={() => handleClick("HomeAdmin")}
@@ -108,6 +137,12 @@ function Navbar({ isAdmin }) {
               Admin Panel
             </div>
           )}
+          <div
+            onClick={() => handleClick("Cart")}
+            style={styles.overlayItem}
+          >
+            Carrito
+          </div>
         </div>
       )}
     </nav>
@@ -124,8 +159,12 @@ function getPath(name) {
       return "/aboutUs";
     case "Contact":
       return "/Formulario";
+    case "Order History":
+      return "/OrderHistory";
     case "HomeAdmin":
       return "/HomeAdmin";
+    case "Cart":
+      return "/cart";
     default:
       return "/";
   }
@@ -140,9 +179,9 @@ const styles = {
   },
   menuContainer: {
     display: "flex",
-    justifyContent: "center", // centra el menu horizontalmente
+    justifyContent: "center",
     alignItems: "center",
-    position: "relative", // para posicionar login absolute
+    position: "relative",
     padding: "10px 20px",
   },
   burger: {
@@ -182,9 +221,17 @@ const styles = {
     borderRadius: "5px",
     transition: "all 0.3s ease",
   },
-  loginContainer: {
+  rightSection: {
     position: "absolute",
     right: "20px",
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+  },
+  loginContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   loginButton: {
     background: "#7dbbe6",
