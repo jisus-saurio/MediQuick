@@ -1,35 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';  // Importa la librería para manejar cookies si la usas
+import Cookies from 'js-cookie';
 import '../style/WelcomeAdmin.css';
 
 const HomeAdmind = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // elimina token
-    Cookies.remove('token'); // elimina cookie 'token' si usas cookies para la sesión (opcional)
-    navigate('/'); // redirige a la ruta raíz "/"
+    localStorage.removeItem('token');
+    Cookies.remove('token');
+    navigate('/');
   };
 
   return (
-    <div className="welcome-container">
-      <h1 className="welcome-title">¡Bienvenido, Administrador!</h1>
-      <p className="welcome-subtitle">Seleccione una opción para continuar:</p>
-
-      <div className="button-group">
-        <button className="admin-button" onClick={() => navigate('/categories')}>
-          Ver Categorias
-        </button>
-        <button className="admin-button" onClick={() => navigate('/employees')}>
-          Agregar Empleado
-        </button>
-        <button className="admin-button" onClick={() => navigate('/add_products')}>
-          Productos
-        </button>
-        <button className="admin-button logout" onClick={handleLogout}>
-          Cerrar Sesión
-        </button>
+    <div className="home-admin">
+      <div className="admin-content">
+        <h1 className="welcome-title">¡Bienvenido, Administrador!</h1>
+        <p className="welcome-subtitle">Utilice el menú de navegación para gestionar el sistema.</p>
       </div>
     </div>
   );

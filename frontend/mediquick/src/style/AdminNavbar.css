@@ -1,0 +1,71 @@
+.admin-nav {
+  background-color: #F8CBB2 !important; /* Fuerza el fondo que quieres */
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 16px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Título del navbar */
+.nav-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #4a2e2e;
+  text-decoration: none !important; /* Sin subrayado */
+  cursor: pointer;
+}
+
+/* Lista de links */
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+/* Links */
+.nav-links a {
+  color: #4a2e2e;
+  text-decoration: none !important; /* Sin subrayado */
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  transition: background-color 0.3s ease;
+  display: inline-block;
+}
+
+/* Burbuja cuando el link es activo */
+/* Como usas Link y no NavLink, tendrás que aplicar la clase "active" manualmente */
+/* O si quieres, te enseño cómo con NavLink que la asigna automáticamente */
+
+.nav-links a.active {
+  background-color: #fff5ed; /* burbuja suave que combina */
+  color: #b04a2b;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Hover sin subrayado */
+.nav-links a:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  text-decoration: none !important;
+}
+
+/* Para el botón de cerrar sesión (si lo añades luego) */
+.logout-btn {
+  background-color: transparent;
+  border: none;
+  color: #b02e2e;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  text-decoration: none !important;
+}
+
+.logout-btn:hover,
+.logout-btn:focus,
+.logout-btn:active {
+  text-decoration: none !important;
+}

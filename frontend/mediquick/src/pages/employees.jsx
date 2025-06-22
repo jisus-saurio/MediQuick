@@ -2,6 +2,8 @@
 import React, { useEffect } from "react";
 import "../style/Employees.css";
 import { useEmployees } from "../hooks/useEmployees";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Employees componente
 const Employees = () => {
@@ -28,7 +30,42 @@ const Employees = () => {
     }
   }, [isModalOpen]);
 
-  // Render the component
+  const validate = () => {
+    if (!newEmployee.name.trim()) {
+      toast.error("El nombre es obligatorio");
+      return false;
+    }
+    if (!newEmployee.surname.trim()) {
+      toast.error("El apellido es obligatorio");
+      return false;
+    }
+    if (!newEmployee.email.trim()) {
+      toast.error("El correo electrónico es obligatorio");
+      return false;
+    }
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(newEmployee.email)) {
+      toast.error("El correo electrónico no es válido");
+      return false;
+    }
+    if (!newEmployee.position.trim()) {
+      toast.error("La posición es obligatoria");
+      return false;
+    }
+    if (!newEmployee.nurse_credential.trim()) {
+      toast.error("La credencial de enfermería es obligatoria");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSave = () => {
+    if (validate()) {
+      saveEmployee();
+      toast.success(editingEmployeeId ? "Empleado actualizado" : "Empleado agregado");
+    }
+  };
+
   return (
     <div className="empleados-container">
       <div className="contenido">
@@ -65,19 +102,44 @@ const Employees = () => {
         </button>
       </div>
 
-         {// Modal para agregar/editar empleados
-         } 
       {isModalOpen && (
         <div className="modal">
           <div className="modal-content">
             <h2>{editingEmployeeId ? "Editar" : "Agregar"} Empleado</h2>
-            <input name="name" placeholder="Nombre" value={newEmployee.name} onChange={handleChange} />
-            <input name="surname" placeholder="Apellido" value={newEmployee.surname} onChange={handleChange} />
-            <input name="email" placeholder="Email" value={newEmployee.email} onChange={handleChange} />
-            <input name="position" placeholder="Posición" value={newEmployee.position} onChange={handleChange} />
-            <input name="nurse_credential" placeholder="Credencial de Enfermería" value={newEmployee.nurse_credential} onChange={handleChange} />
+
+            <input
+              name="name"
+              placeholder="Nombre"
+              value={newEmployee.name}
+              onChange={handleChange}
+            />
+            <input
+              name="surname"
+              placeholder="Apellido"
+              value={newEmployee.surname}
+              onChange={handleChange}
+            />
+            <input
+              name="email"
+              placeholder="Email"
+              value={newEmployee.email}
+              onChange={handleChange}
+            />
+            <input
+              name="position"
+              placeholder="Posición"
+              value={newEmployee.position}
+              onChange={handleChange}
+            />
+            <input
+              name="nurse_credential"
+              placeholder="Credencial de Enfermería"
+              value={newEmployee.nurse_credential}
+              onChange={handleChange}
+            />
+
             <div className="modal-buttons">
-              <button onClick={saveEmployee}>
+              <button onClick={handleSave}>
                 {editingEmployeeId ? "Actualizar" : "Guardar"}
               </button>
               <button onClick={closeModal}>Cancelar</button>
@@ -85,6 +147,8 @@ const Employees = () => {
           </div>
         </div>
       )}
+
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

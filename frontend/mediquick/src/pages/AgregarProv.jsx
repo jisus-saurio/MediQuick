@@ -5,25 +5,30 @@ const FormularioProveedor = () => {
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [error, setError] = useState("");
 
-  const validarCorreo = (email) => {
-    // Validación básica de correo
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
+  const validarCorreo = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validarTelefono = (tel) => /^\d{7,15}$/.test(tel);
 
   const handleAgregar = () => {
     if (!nombre || !correo || !telefono) {
-      alert("Por favor, completa todos los campos.");
+      setError("Por favor, completa todos los campos.");
       return;
     }
 
     if (!validarCorreo(correo)) {
-      alert("El correo electrónico no es válido.");
+      setError("El correo electrónico no es válido.");
       return;
     }
 
+    if (!validarTelefono(telefono)) {
+      setError("El teléfono debe tener solo números y entre 7 y 15 dígitos.");
+      return;
+    }
+
+    setError("");
     alert("Proveedor agregado correctamente.");
-    // Aquí iría la lógica de enviar los datos a la API o base de datos
+    // Aquí iría la lógica para enviar datos a la API o base de datos
 
     // Limpiar campos
     setNombre("");
@@ -57,6 +62,8 @@ const FormularioProveedor = () => {
             value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
           />
+
+          {error && <p className="error">{error}</p>}
 
           <button className="btn-agregar" onClick={handleAgregar}>
             Agregar

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../style/LoginForm.css";
 import { useAuth } from "../context/AuthContext";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -19,26 +21,45 @@ const LoginForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
+
   const handleLogin = async () => {
     const { email, password } = formData;
 
     // Verifica que el email y la contraseña no estén vacíos
     if (!email || !password) {
-      console.error("Email y contraseña son requeridos");
+      toast.error("Email y contraseña son requeridos");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      toast.error("Correo electrónico inválido");
       return;
     }
 
     const result = await login(email, password);
     if (result.success) {
-      console.log("Login exitoso");
-      navigate("/HomeAdmind"); // Redirige al home después de iniciar sesión
+      toast.success("Inicio de sesión exitoso");
+      navigate("/HomeAdmind");
     } else {
-      console.error("Error al iniciar sesión:", result.message);
+      toast.error(result.message || "Error al iniciar sesión");
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    const { name, email, password, address, phone } = formData;
+
+    if (!name || !email || !password || !address || !phone) {
+      toast.error("Todos los campos son obligatorios");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      toast.error("Correo electrónico inválido");
+      return;
+    }
+
     try {
       const response = await fetch("/api/users", {
         method: "POST",
@@ -49,9 +70,22 @@ const LoginForm = () => {
       });
 
       const data = await response.json();
-      console.log("Registro exitoso:", data);
+
+      if (response.ok) {
+        toast.success("Registro exitoso");
+        setIsLogin(true);
+        setFormData({
+          email: "",
+          password: "",
+          name: "",
+          address: "",
+          phone: "",
+        });
+      } else {
+        toast.error(data.message || "Error al registrar");
+      }
     } catch (error) {
-      console.error("Error al registrar usuario:", error);
+      toast.error("Error de conexión al registrar");
     }
   };
 
@@ -140,6 +174,7 @@ const LoginForm = () => {
           </form>
         )}
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

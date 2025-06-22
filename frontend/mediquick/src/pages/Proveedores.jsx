@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../style/Proveedores.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Proveedores = () => {
   const [proveedores, setProveedores] = useState([]);
@@ -18,7 +20,7 @@ const Proveedores = () => {
       const data = await response.json();
       setProveedores(data);
     } catch (error) {
-      console.error("Error al obtener proveedores:", error);
+      toast.error("Error al obtener proveedores");
     }
   };
 
@@ -51,22 +53,46 @@ const Proveedores = () => {
     setExpandedCardId(expandedCardId === id ? null : id);
   };
 
+  const validateProveedor = () => {
+    if (!newProveedor.name.trim()) {
+      toast.error("El nombre del proveedor es obligatorio");
+      return false;
+    }
+    if (!newProveedor.contact.trim()) {
+      toast.error("La persona de contacto es obligatoria");
+      return false;
+    }
+    if (!newProveedor.phone.trim()) {
+      toast.error("El teléfono es obligatorio");
+      return false;
+    }
+    return true;
+  };
+
   const saveProveedor = async () => {
+    if (!validateProveedor()) return;
+
     const method = editingProveedorId ? "PUT" : "POST";
     const url = editingProveedorId
       ? `http://localhost:4000/api/suppliers/${editingProveedorId}`
       : "http://localhost:4000/api/suppliers";
 
     try {
-      await fetch(url, {
+      const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newProveedor),
       });
-      fetchProveedores();
-      closeModal();
+
+      if (response.ok) {
+        toast.success(editingProveedorId ? "Proveedor actualizado" : "Proveedor agregado");
+        fetchProveedores();
+        closeModal();
+      } else {
+        toast.error("Error al guardar proveedor");
+      }
     } catch (error) {
-      console.error("Error al guardar proveedor:", error);
+      toast.error("Error al conectar con el servidor");
     }
   };
 
@@ -75,9 +101,10 @@ const Proveedores = () => {
       await fetch(`http://localhost:4000/api/suppliers/${id}`, {
         method: "DELETE",
       });
+      toast.success("Proveedor eliminado");
       fetchProveedores();
     } catch (error) {
-      console.error("Error al eliminar proveedor:", error);
+      toast.error("Error al eliminar proveedor");
     }
   };
 
@@ -101,9 +128,7 @@ const Proveedores = () => {
                   <p>Contacto: {proveedor.contact}</p>
                   <div className="card-actions">
                     <button onClick={() => openModal(proveedor)}>Editar</button>
-                    <button onClick={() => deleteProveedor(proveedor._id)}>
-                      Eliminar
-                    </button>
+                    <button onClick={() => deleteProveedor(proveedor._id)}>Eliminar</button>
                   </div>
                 </div>
               )}
@@ -147,6 +172,8 @@ const Proveedores = () => {
           </div>
         </div>
       )}
+
+      <ToastContainer position="top-right" autoClose={2500} />
     </div>
   );
 };

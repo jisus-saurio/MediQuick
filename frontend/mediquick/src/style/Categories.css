@@ -13,6 +13,13 @@
   min-height: 100vh;
 }
 
+.error-message {
+  color: red;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+
 /* Título centrado */
 .title-wrapper {
   display: flex;
