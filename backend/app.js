@@ -2,6 +2,8 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import jsonwebtoken from "jsonwebtoken";
+import { config } from "./src/config.js";
 
 // Importar rutas
 import userRoutes from "./src/routes/user.js";
@@ -23,7 +25,7 @@ const app = express();
 // Configuración de CORS
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: config.FRONTEND_URL,
     credentials: true, // Permitir envío de cookies y credenciales
   })
 );
@@ -32,18 +34,70 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Rutas protegidas por el middleware de autenticación
-app.use("/api/users", validateAuthToken(["Admin"]), userRoutes);
-app.use("/api/employees", validateAuthToken(["Employee", "Admin"]), employeesRoutes);
-app.use("/api/categories", validateAuthToken(["Admin"]), categoriesRoutes);
-app.use("/api/products", validateAuthToken(["Admin"]), productsRoutes);
-app.use("/api/discounts", validateAuthToken(["Admin"]), discountsRoutes);
-app.use("/api/carts", validateAuthToken(["Employee", "Admin"]), cartsRoutes);
-app.use("/api/sales", validateAuthToken(["Employee", "Admin"]), salesRoutes);
-app.use("/api/suppliers", validateAuthToken(["Admin"]), suppliersRoutes);
-app.use("/api/orders", validateAuthToken(["Employee", "Admin"]), orderRoutes);
+// Servir archivos estáticos (imágenes de productos, etc.)
+app.use('/uploads', express.static('uploads'));
+
+// ===== RUTAS PÚBLICAS (sin autenticación requerida) =====
 app.use("/api/login", loginRoutes);
 app.use("/api/logout", logoutRoutes);
+
+// Rutas de productos - AHORA PÚBLICAS para visualización (se maneja internamente)
+app.use("/api/products", productsRoutes);
+
+// Rutas de categorías - AHORA PÚBLICAS para visualización (se maneja internamente)
+app.use("/api/categories", categoriesRoutes);
+
+// ===== RUTAS PROTEGIDAS POR AUTENTICACIÓN =====
+
+// Rutas solo para administradores
+app.use("/api/users", validateAuthToken(["Admin"]), userRoutes);
+app.use("/api/employees", validateAuthToken(["Admin"]), employeesRoutes);
+app.use("/api/discounts", validateAuthToken(["Admin"]), discountsRoutes);
+app.use("/api/suppliers", validateAuthToken(["Admin"]), suppliersRoutes);
+
+// Rutas para empleados, administradores y usuarios autenticados
+app.use("/api/carts", validateAuthToken(["Employee", "Admin", "User"]), cartsRoutes);
+app.use("/api/orders", validateAuthToken(["Employee", "Admin", "User"]), orderRoutes);
+
+// Rutas para empleados y administradores solamente
+app.use("/api/sales", validateAuthToken(["Employee", "Admin"]), salesRoutes);
+
+// Ruta para verificar autenticación (útil para el frontend)
+app.get("/api/auth/verify", (req, res) => {
+  try {
+    const { authToken } = req.cookies;
+    
+    if (!authToken) {
+      return res.status(401).json({ 
+        success: false, 
+        message: "No token found" 
+      });
+    }
+
+    const decoded = jsonwebtoken.verify(authToken, config.JWT.SECRET);
+    
+    res.json({
+      success: true,
+      user: {
+        id: decoded.id,
+        userType: decoded.userType
+      }
+    });
+  } catch (error) {
+    res.status(401).json({ 
+      success: false, 
+      message: "Invalid token" 
+    });
+  }
+});
+
+// Ruta de fallback para APIs no encontradas
+app.use("/api/*", (req, res) => {
+  res.status(404).json({ 
+    success: false, 
+    message: "API endpoint not found" 
+  });
+});
 
 // Exportar la instancia de la aplicación para poder usar Express en otros archivos
 export default app;

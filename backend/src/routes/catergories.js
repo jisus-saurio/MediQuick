@@ -1,20 +1,24 @@
 import express from "express";
+import categoriesController from "../controllers/categoriesController.js";
+import { validateAuthToken, optionalAuth } from "../middleware/validateAuthToken.js";
 
 const router = express.Router();
 
-import categoriesController from "../controllers/categoriesController.js";
+// ===== RUTAS PÚBLICAS (accesibles sin autenticación) =====
+// Obtener todas las categorías - acceso público para la tienda
+router.get("/", optionalAuth, categoriesController.getCategories);
 
-// Define routes for categories
-router
-  .route("/")
-  .get(categoriesController.getCategories)
-  .post(categoriesController.createCategories);
+// Obtener una categoría específica - acceso público
+router.get("/:id", optionalAuth, categoriesController.getCategorie);
 
-// Define routes for a specific category by ID
-router
-  .route("/:id")
-  .get(categoriesController.getCategorie)
-  .put(categoriesController.updateCategories)
-  .delete(categoriesController.deleteCategories);
+// ===== RUTAS PROTEGIDAS (requieren autenticación de Admin) =====
+// Crear categoría - solo admin
+router.post("/", validateAuthToken(["Admin"]), categoriesController.createCategories);
 
-export default router
+// Actualizar categoría - solo admin
+router.put("/:id", validateAuthToken(["Admin"]), categoriesController.updateCategories);
+
+// Eliminar categoría - solo admin
+router.delete("/:id", validateAuthToken(["Admin"]), categoriesController.deleteCategories);
+
+export default router;

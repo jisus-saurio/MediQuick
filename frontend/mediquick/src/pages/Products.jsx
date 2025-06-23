@@ -10,12 +10,12 @@ function Products() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Fetch productos, categorías y proveedores cuando el componente monta
   useEffect(() => {
-    fetchProductos();
-    fetchCategorias();
-    fetchProveedores();
+    fetchInitialData();
 
     // Escuchar eventos de actualización de productos
     const handleProductsUpdated = () => {
@@ -28,6 +28,22 @@ function Products() {
       window.removeEventListener('productsUpdated', handleProductsUpdated);
     };
   }, []);
+
+  const fetchInitialData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchProductos(),
+        fetchCategorias(),
+        fetchProveedores()
+      ]);
+    } catch (error) {
+      console.error('Error al cargar datos iniciales:', error);
+      setError('Error al cargar los datos');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchProductos = async () => {
     try {
@@ -43,10 +59,12 @@ function Products() {
       }
 
       const data = await res.json();
+      console.log('Productos recibidos:', data);
       setProductos(Array.isArray(data) ? data : data.products || []);
     } catch (error) {
       console.error('Error al obtener productos:', error);
       setProductos([]);
+      toast.error('Error al cargar productos');
     }
   };
 
@@ -149,6 +167,41 @@ function Products() {
     closeModal();
   };
 
+  // Función para manejar imágenes rotas o vacías
+  const getImageSrc = (product) => {
+    if (!product.image || product.image.trim() === '') {
+      return null; // Retorna null en lugar de string vacío
+    }
+    return product.image;
+  };
+
+  const handleImageError = (e, productName) => {
+    console.log(`Error cargando imagen para: ${productName}`);
+    e.target.src = '/placeholder-image.jpg';
+    e.target.onerror = null; // Prevenir loop infinito
+  };
+
+  if (loading) {
+    return (
+      <div className="products-page">
+        <div className="loading-container">
+          <p>Cargando productos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="products-page">
+        <div className="error-container">
+          <p>{error}</p>
+          <button onClick={fetchInitialData}>Reintentar</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="products-page">
       <div className="search-bar">
@@ -168,13 +221,17 @@ function Products() {
               key={product._id}
               onClick={() => openProductModal(product)}
             >
-              <img
-                src={product.image}
-                alt={product.name}
-                onError={(e) => {
-                  e.target.src = '/placeholder-image.jpg';
-                }}
-              />
+              {getImageSrc(product) ? (
+                <img
+                  src={getImageSrc(product)}
+                  alt={product.name}
+                  onError={(e) => handleImageError(e, product.name)}
+                />
+              ) : (
+                <div className="no-image-placeholder">
+                  <span>Sin imagen</span>
+                </div>
+              )}
               <h3>{product.name}</h3>
               <p className="product-price">${product.price}</p>
               <p className="product-stock">Stock: {product.stock}</p>
@@ -207,13 +264,17 @@ function Products() {
 
             <div className="modal-content">
               <div className="product-image-section">
-                <img
-                  src={selectedProduct.image}
-                  alt={selectedProduct.name}
-                  onError={(e) => {
-                    e.target.src = '/placeholder-image.jpg';
-                  }}
-                />
+                {getImageSrc(selectedProduct) ? (
+                  <img
+                    src={getImageSrc(selectedProduct)}
+                    alt={selectedProduct.name}
+                    onError={(e) => handleImageError(e, selectedProduct.name)}
+                  />
+                ) : (
+                  <div className="no-image-placeholder">
+                    <span>Sin imagen disponible</span>
+                  </div>
+                )}
               </div>
 
               <div className="product-info-section">

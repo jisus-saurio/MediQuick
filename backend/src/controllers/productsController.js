@@ -7,15 +7,15 @@ import Supplier from '../models/Suppliers.js';
 
 // Configurar Cloudinary
 cloudinary.config({
-  cloud_name: config.cloudinary.CLOUD_NAME,
-  api_key: config.cloudinary.API_KEY,
-  api_secret: config.cloudinary.API_SECRET,
+  cloud_name: config.CLOUDINARY.CLOUD_NAME,
+  api_key: config.CLOUDINARY.API_KEY,
+  api_secret: config.CLOUDINARY.API_SECRET,
 });
 
 // Configurar multer para manejar la subida de archivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Asegúrate de que esta carpeta exista
+    cb(null, 'uploads/'); 
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + '-' + file.originalname);

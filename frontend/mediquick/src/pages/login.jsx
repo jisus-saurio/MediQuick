@@ -9,6 +9,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -37,12 +38,28 @@ const LoginForm = () => {
       return;
     }
 
-    const result = await login(email, password);
-    if (result.success) {
-      toast.success("Inicio de sesión exitoso");
-      navigate("/HomeAdmind");
-    } else {
-      toast.error(result.message || "Error al iniciar sesión");
+    setIsLoading(true);
+    
+    try {
+      const result = await login(email, password);
+      
+      if (result.success) {
+        toast.success("Inicio de sesión exitoso");
+        
+        // Usar la redirección que viene del backend
+        const redirectPath = result.redirectTo || "/";
+        
+        setTimeout(() => {
+          navigate(redirectPath);
+        }, 1000);
+      } else {
+        toast.error(result.message || "Error al iniciar sesión");
+      }
+    } catch (error) {
+      toast.error("Error de conexión. Intente nuevamente.");
+      console.error("Error en login:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -60,6 +77,13 @@ const LoginForm = () => {
       return;
     }
 
+    if (password.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
       const response = await fetch("/api/users", {
         method: "POST",
@@ -72,10 +96,10 @@ const LoginForm = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Registro exitoso");
+        toast.success("Registro exitoso. Ahora puede iniciar sesión.");
         setIsLogin(true);
         setFormData({
-          email: "",
+          email: formData.email, 
           password: "",
           name: "",
           address: "",
@@ -86,6 +110,15 @@ const LoginForm = () => {
       }
     } catch (error) {
       toast.error("Error de conexión al registrar");
+      console.error("Error en registro:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && isLogin) {
+      handleLogin();
     }
   };
 
@@ -93,11 +126,17 @@ const LoginForm = () => {
     <div className="container">
       <div className="login-box">
         <div className="tabs">
-          <span className={isLogin ? "active" : ""} onClick={() => setIsLogin(true)}>
-            Login
+          <span 
+            className={isLogin ? "active" : ""} 
+            onClick={() => !isLoading && setIsLogin(true)}
+          >
+            Iniciar Sesión
           </span>
-          <span className={!isLogin ? "active" : ""} onClick={() => setIsLogin(false)}>
-            Sign up
+          <span 
+            className={!isLogin ? "active" : ""} 
+            onClick={() => !isLoading && setIsLogin(false)}
+          >
+            Registrarse
           </span>
         </div>
 
@@ -109,21 +148,47 @@ const LoginForm = () => {
               placeholder="Email"
               value={formData.email}
               onChange={handleChange}
+              onKeyPress={handleKeyPress}
+              disabled={isLoading}
               required
             />
             <input
               type="password"
               name="password"
-              placeholder="Password"
+              placeholder="Contraseña"
               value={formData.password}
               onChange={handleChange}
+              onKeyPress={handleKeyPress}
+              disabled={isLoading}
               required
             />
             <div className="forgot">
-              <a href="#">¿Olvidaste tu Contraseña?</a>
+              <a href="#" onClick={(e) => e.preventDefault()}>
+                ¿Olvidaste tu Contraseña?
+              </a>
             </div>
-            <button className="login-btn" onClick={handleLogin}>
-              Login
+            <button 
+              className="login-btn" 
+              onClick={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? "Iniciando..." : "Iniciar Sesión"}
+            </button>
+            
+            {/* Botón para continuar sin iniciar sesión */}
+            <button 
+              className="guest-btn" 
+              onClick={() => navigate("/")}
+              type="button"
+              disabled={isLoading}
+              style={{
+                background: 'transparent',
+                border: '1px solid #ccc',
+                marginTop: '10px',
+                color: '#666'
+              }}
+            >
+              Continuar como invitado
             </button>
           </div>
         ) : (
@@ -131,9 +196,10 @@ const LoginForm = () => {
             <input
               type="text"
               name="name"
-              placeholder="Name"
+              placeholder="Nombre completo"
               value={formData.name}
               onChange={handleChange}
+              disabled={isLoading}
               required
             />
             <input
@@ -142,39 +208,58 @@ const LoginForm = () => {
               placeholder="Email"
               value={formData.email}
               onChange={handleChange}
+              disabled={isLoading}
               required
             />
             <input
               type="password"
               name="password"
-              placeholder="Password"
+              placeholder="Contraseña (mín. 6 caracteres)"
               value={formData.password}
               onChange={handleChange}
+              disabled={isLoading}
+              minLength="6"
               required
             />
             <input
               type="text"
               name="address"
-              placeholder="Address"
+              placeholder="Dirección"
               value={formData.address}
               onChange={handleChange}
+              disabled={isLoading}
               required
             />
             <input
-              type="text"
+              type="tel"
               name="phone"
-              placeholder="Phone"
+              placeholder="Teléfono"
               value={formData.phone}
               onChange={handleChange}
+              disabled={isLoading}
               required
             />
-            <button type="submit" className="login-btn">
-              Register
+            <button 
+              type="submit" 
+              className="login-btn"
+              disabled={isLoading}
+            >
+              {isLoading ? "Registrando..." : "Registrarse"}
             </button>
           </form>
         )}
       </div>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer 
+        position="top-right" 
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };

@@ -2,10 +2,24 @@ import app from "./app.js";
 import "./database.js";
 import { config } from "./src/config.js";
 
-//imports necesarios para la base de datos y la configuracion del servidor
+// Función principal para iniciar el servidor
 async function main() {
-  app.listen(config.server.PORT);
-  console.log("El servidor esta activo"); //no habia visto esta pagina una disculpa no vi quien me cambio esto:c
+  try {
+    
+    const port = config.PORT || 4000;
+    
+    app.listen(port, () => {
+      console.log(`🚀 Servidor activo en puerto ${port}`);
+      console.log(`🌐 URL: http://localhost:${port}`);
+      console.log(`📊 Entorno: ${config.NODE_ENV}`);
+      console.log(`🔗 Frontend URL configurado: ${config.FRONTEND_URL}`);
+      console.log('===================================');
+    });
+    
+  } catch (error) {
+    console.error('❌ Error al iniciar el servidor:', error);
+    process.exit(1);
+  }
 }
 
 main();
