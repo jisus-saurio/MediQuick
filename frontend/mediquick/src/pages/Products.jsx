@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../style/Products.css';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ProductRatingsDisplay from '../components/ProductRatingsDisplay';
 
 function Products() {
   const [productos, setProductos] = useState([]);
@@ -12,6 +13,7 @@ function Products() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showRatings, setShowRatings] = useState(false);
 
   // Fetch productos, categorías y proveedores cuando el componente monta
   useEffect(() => {
@@ -110,6 +112,24 @@ function Products() {
     }
   };
 
+  // Función para obtener valoración promedio de un producto
+  const getProductRating = (productId) => {
+    try {
+      const allRatings = JSON.parse(localStorage.getItem('productRatings') || '[]');
+      const productRatings = allRatings.filter(rating => rating.productId === productId);
+      
+      if (productRatings.length === 0) {
+        return { average: 0, count: 0 };
+      }
+      
+      const average = productRatings.reduce((sum, rating) => sum + rating.stars, 0) / productRatings.length;
+      return { average: Math.round(average * 10) / 10, count: productRatings.length };
+    } catch (error) {
+      console.error('Error obteniendo valoración:', error);
+      return { average: 0, count: 0 };
+    }
+  };
+
   const getNombreCategoria = (id) => {
     const cat = categorias.find((c) => c._id === id);
     return cat ? cat.name : 'Sin categoría';
@@ -134,11 +154,13 @@ function Products() {
   const openProductModal = (product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
+    setShowRatings(false); // Iniciar en la pestaña de detalles
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedProduct(null);
+    setShowRatings(false);
   };
 
   const addToCart = (product) => {
@@ -170,7 +192,7 @@ function Products() {
   // Función para manejar imágenes rotas o vacías
   const getImageSrc = (product) => {
     if (!product.image || product.image.trim() === '') {
-      return null; // Retorna null en lugar de string vacío
+      return null;
     }
     return product.image;
   };
@@ -178,7 +200,14 @@ function Products() {
   const handleImageError = (e, productName) => {
     console.log(`Error cargando imagen para: ${productName}`);
     e.target.src = '/placeholder-image.jpg';
-    e.target.onerror = null; // Prevenir loop infinito
+    e.target.onerror = null;
+  };
+
+  const getStarDisplay = (rating) => {
+    if (rating === 0) return '';
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    return '★'.repeat(fullStars) + (hasHalfStar ? '☆' : '') + '☆'.repeat(5 - fullStars - (hasHalfStar ? 1 : 0));
   };
 
   if (loading) {
@@ -215,37 +244,54 @@ function Products() {
 
       <div className="product-grid">
         {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
-            <div
-              className="product-card"
-              key={product._id}
-              onClick={() => openProductModal(product)}
-            >
-              {getImageSrc(product) ? (
-                <img
-                  src={getImageSrc(product)}
-                  alt={product.name}
-                  onError={(e) => handleImageError(e, product.name)}
-                />
-              ) : (
-                <div className="no-image-placeholder">
-                  <span>Sin imagen</span>
-                </div>
-              )}
-              <h3>{product.name}</h3>
-              <p className="product-price">${product.price}</p>
-              <p className="product-stock">Stock: {product.stock}</p>
-              <button
-                className="buy-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openProductModal(product);
-                }}
+          filteredProducts.map((product) => {
+            const rating = getProductRating(product._id);
+            return (
+              <div
+                className="product-card"
+                key={product._id}
+                onClick={() => openProductModal(product)}
               >
-                Ver Detalles
-              </button>
-            </div>
-          ))
+                {getImageSrc(product) ? (
+                  <img
+                    src={getImageSrc(product)}
+                    alt={product.name}
+                    onError={(e) => handleImageError(e, product.name)}
+                  />
+                ) : (
+                  <div className="no-image-placeholder">
+                    <span>Sin imagen</span>
+                  </div>
+                )}
+                
+                <div className="product-info">
+                  <h3>{product.name}</h3>
+                  <p className="product-price">${product.price}</p>
+                  <p className="product-stock">Stock: {product.stock}</p>
+                  
+                  {/* Mostrar valoración si existe */}
+                  {rating.count > 0 && (
+                    <div className="product-rating">
+                      <span className="rating-stars">{getStarDisplay(rating.average)}</span>
+                      <span className="rating-info">
+                        {rating.average}/5 ({rating.count} valoración{rating.count !== 1 ? 'es' : ''})
+                      </span>
+                    </div>
+                  )}
+                  
+                  <button
+                    className="buy-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openProductModal(product);
+                    }}
+                  >
+                    Ver Detalles
+                  </button>
+                </div>
+              </div>
+            );
+          })
         ) : (
           <div className="no-products">
             <p>No se encontraron productos.</p>
@@ -258,57 +304,118 @@ function Products() {
       {isModalOpen && selectedProduct && (
         <div className="product-modal-overlay" onClick={closeModal}>
           <div className="product-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="close-btn" onClick={closeModal}>
-              ×
-            </button>
+            <button className="close-btn" onClick={closeModal}>×</button>
+
+            {/* Pestañas del modal */}
+            <div className="modal-tabs">
+              <button 
+                className={`modal-tab ${!showRatings ? 'active' : ''}`}
+                onClick={() => setShowRatings(false)}
+              >
+                <span className="tab-icon">📋</span>
+                Detalles
+              </button>
+              <button 
+                className={`modal-tab ${showRatings ? 'active' : ''}`}
+                onClick={() => setShowRatings(true)}
+              >
+                <span className="tab-icon">⭐</span>
+                Valoraciones
+              </button>
+            </div>
 
             <div className="modal-content">
-              <div className="product-image-section">
-                {getImageSrc(selectedProduct) ? (
-                  <img
-                    src={getImageSrc(selectedProduct)}
-                    alt={selectedProduct.name}
-                    onError={(e) => handleImageError(e, selectedProduct.name)}
-                  />
-                ) : (
-                  <div className="no-image-placeholder">
-                    <span>Sin imagen disponible</span>
+              {!showRatings ? (
+                // Contenido de detalles del producto
+                <>
+                  <div className="product-image-section">
+                    {getImageSrc(selectedProduct) ? (
+                      <img
+                        src={getImageSrc(selectedProduct)}
+                        alt={selectedProduct.name}
+                        onError={(e) => handleImageError(e, selectedProduct.name)}
+                      />
+                    ) : (
+                      <div className="no-image-placeholder">
+                        <span>Sin imagen disponible</span>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              <div className="product-info-section">
-                <h2>{selectedProduct.name}</h2>
-                <p className="product-description">{selectedProduct.description}</p>
+                  <div className="product-info-section">
+                    <h2>{selectedProduct.name}</h2>
+                    <p className="product-description">{selectedProduct.description}</p>
 
-                <div className="product-details">
-                  <p>
-                    <strong>Precio:</strong> ${selectedProduct.price}
-                  </p>
-                  <p>
-                    <strong>Stock disponible:</strong> {selectedProduct.stock} unidades
-                  </p>
-                  <p>
-                    <strong>Categoría:</strong> {getNombreCategoria(selectedProduct.categoryId)}
-                  </p>
-                  <p>
-                    <strong>Proveedor:</strong> {getNombreProveedor(selectedProduct.supplierId)}
-                  </p>
+                    {/* Valoración rápida */}
+                    {(() => {
+                      const rating = getProductRating(selectedProduct._id);
+                      return rating.count > 0 ? (
+                        <div className="product-rating-summary">
+                          <div className="rating-display">
+                            <span className="rating-stars">{getStarDisplay(rating.average)}</span>
+                            <span className="rating-text">
+                              {rating.average}/5 ({rating.count} valoración{rating.count !== 1 ? 'es' : ''})
+                            </span>
+                          </div>
+                          <button 
+                            className="view-ratings-btn"
+                            onClick={() => setShowRatings(true)}
+                          >
+                            Ver todas las valoraciones
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="no-rating-summary">
+                          <span className="no-rating-text">Sin valoraciones aún</span>
+                          <button 
+                            className="view-ratings-btn"
+                            onClick={() => setShowRatings(true)}
+                          >
+                            Ver valoraciones
+                          </button>
+                        </div>
+                      );
+                    })()}
+
+                    <div className="product-details">
+                      <p>
+                        <strong>Precio:</strong> ${selectedProduct.price}
+                      </p>
+                      <p>
+                        <strong>Stock disponible:</strong> {selectedProduct.stock} unidades
+                      </p>
+                      <p>
+                        <strong>Categoría:</strong> {getNombreCategoria(selectedProduct.categoryId)}
+                      </p>
+                      <p>
+                        <strong>Proveedor:</strong> {getNombreProveedor(selectedProduct.supplierId)}
+                      </p>
+                    </div>
+
+                    <div className="modal-actions">
+                      <button
+                        className="add-to-cart-btn"
+                        onClick={() => addToCart(selectedProduct)}
+                        disabled={selectedProduct.stock <= 0}
+                      >
+                        {selectedProduct.stock <= 0 ? 'Sin Stock' : 'Agregar al Carrito'}
+                      </button>
+                      <button className="cancel-btn" onClick={closeModal}>
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                // Contenido de valoraciones
+                <div className="ratings-section">
+                  <h2>Valoraciones de {selectedProduct.name}</h2>
+                  <ProductRatingsDisplay 
+                    productId={selectedProduct._id} 
+                    showInModal={true}
+                  />
                 </div>
-
-                <div className="modal-actions">
-                  <button
-                    className="add-to-cart-btn"
-                    onClick={() => addToCart(selectedProduct)}
-                    disabled={selectedProduct.stock <= 0}
-                  >
-                    {selectedProduct.stock <= 0 ? 'Sin Stock' : 'Agregar al Carrito'}
-                  </button>
-                  <button className="cancel-btn" onClick={closeModal}>
-                    Cancelar
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

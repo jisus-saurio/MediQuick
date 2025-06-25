@@ -79,6 +79,12 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .product-card h3 {
     font-size: 16px;
     margin: 10px 0;
@@ -96,6 +102,29 @@
     font-size: 14px;
     color: #666;
     margin: 5px 0;
+}
+
+/* Valoraciones en las tarjetas de producto */
+.product-rating {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 8px;
+    margin: 8px 0;
+    border-left: 3px solid #ff8c00;
+}
+
+.rating-stars {
+    font-size: 14px;
+    color: #ff8c00;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.rating-info {
+    font-size: 11px;
+    color: #666;
+    font-weight: bold;
 }
 
 .buy-btn {
@@ -180,7 +209,7 @@
 .product-modal {
     background: white;
     border-radius: 15px;
-    max-width: 800px;
+    max-width: 900px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
@@ -204,43 +233,91 @@
     position: absolute;
     top: 15px;
     right: 15px;
-    background: none;
+    background: rgba(248, 203, 178, 0.9);
     border: none;
     font-size: 24px;
     cursor: pointer;
     color: #666;
     z-index: 1001;
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .close-btn:hover {
-    background-color: #f0f0f0;
+    background: #F8CBB2;
+    color: #333;
+    transform: rotate(90deg);
+}
+
+/* Pestañas del modal */
+.modal-tabs {
+    display: flex;
+    background: #f0eafa;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.modal-tab {
+    flex: 1;
+    padding: 18px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #666;
+    position: relative;
+}
+
+.modal-tab:hover {
+    background: rgba(248, 203, 178, 0.3);
+    color: #333;
+}
+
+.modal-tab.active {
+    background: #F8CBB2;
+    color: #333;
+    border-bottom: 3px solid #a5c8d8;
+}
+
+.tab-icon {
+    font-size: 18px;
 }
 
 .modal-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
     padding: 30px;
 }
 
+/* Contenido de detalles del producto en modal */
+.product-image-section {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
 .product-image-section img {
-    width: 100%;
-    height: 300px;
+    max-width: 350px;
+    max-height: 350px;
     object-fit: contain;
-    border-radius: 10px;
-    border: 1px solid #e0e0e0;
+    border-radius: 15px;
+    border: 2px solid #F8CBB2;
     background-color: #f9f9f9;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Placeholder en el modal */
 .product-image-section .no-image-placeholder {
+    max-width: 350px;
+    max-height: 350px;
     width: 100%;
     height: 300px;
     background-color: #f0f0f0;
@@ -250,8 +327,8 @@
     justify-content: center;
     color: #666;
     font-size: 16px;
-    border-radius: 10px;
-    margin: 0;
+    border-radius: 15px;
+    margin: 0 auto;
 }
 
 .product-info-section h2 {
@@ -259,13 +336,79 @@
     font-size: 28px;
     color: #333;
     font-weight: 700;
+    text-align: center;
 }
 
 .product-description {
     font-size: 16px;
     line-height: 1.6;
     color: #666;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+/* Resumen de valoración en modal */
+.product-rating-summary {
+    background: #F8CBB2;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+    border-left: 4px solid #ff8c00;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.rating-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.product-rating-summary .rating-stars {
+    font-size: 24px;
+    color: #ff8c00;
+}
+
+.rating-text {
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
+}
+
+.no-rating-summary {
+    background: #f0eafa;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+    border-left: 4px solid #a5c8d8;
+}
+
+.no-rating-text {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.view-ratings-btn {
+    padding: 10px 20px;
+    background: #a5c8d8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.view-ratings-btn:hover {
+    background: #8bb1c3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .product-details {
@@ -278,6 +421,15 @@
 .product-details p {
     margin: 10px 0;
     font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.product-details p:last-child {
+    border-bottom: none;
 }
 
 .product-details strong {
@@ -329,6 +481,19 @@
     background-color: #545b62;
 }
 
+/* Sección de valoraciones en modal */
+.ratings-section {
+    text-align: left;
+}
+
+.ratings-section h2 {
+    margin: 0 0 25px 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+}
+
 /* Responsive design */
 @media (max-width: 1200px) {
     .product-grid {
@@ -366,18 +531,26 @@
     }
     
     .modal-content {
-        grid-template-columns: 1fr;
-        gap: 20px;
         padding: 20px;
     }
     
     .product-image-section img,
     .product-image-section .no-image-placeholder {
+        max-width: 280px;
         height: 250px;
     }
     
     .modal-actions {
         flex-direction: column;
+    }
+    
+    .modal-tabs {
+        flex-direction: row;
+    }
+    
+    .modal-tab {
+        padding: 15px;
+        font-size: 14px;
     }
 }
 
@@ -407,5 +580,33 @@
     .buy-btn {
         padding: 10px 20px;
         font-size: 16px;
+    }
+    
+    .close-btn {
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        font-size: 20px;
+    }
+    
+    .modal-content {
+        padding: 15px;
+    }
+    
+    .product-info-section h2 {
+        font-size: 22px;
+    }
+    
+    .product-rating {
+        padding: 6px;
+    }
+    
+    .rating-stars {
+        font-size: 12px;
+    }
+    
+    .rating-info {
+        font-size: 10px;
     }
 }

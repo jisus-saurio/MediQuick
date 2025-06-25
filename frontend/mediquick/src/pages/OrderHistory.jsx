@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../style/OrderHistory.css';
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ProductRating from '../components/ProductRatingsDisplay';
 
 function OrderHistory() {
   const [orders, setOrders] = useState([]);
@@ -9,6 +10,8 @@ function OrderHistory() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [selectedProductForRating, setSelectedProductForRating] = useState(null);
 
   useEffect(() => {
     loadOrdersFromLocalStorage();
@@ -20,10 +23,91 @@ function OrderHistory() {
 
     window.addEventListener('ordersUpdated', handleOrdersUpdated);
 
+    // Iniciar el sistema de progresión automática de estados
+    const progressionInterval = startOrderStatusProgression();
+
     return () => {
       window.removeEventListener('ordersUpdated', handleOrdersUpdated);
+      if (progressionInterval) {
+        clearInterval(progressionInterval);
+      }
     };
   }, []);
+
+  // Sistema de progresión automática de estados
+  const startOrderStatusProgression = () => {
+    const intervalId = setInterval(() => {
+      updateOrderStatuses();
+    }, 10000); // Verificar cada 10 segundos
+
+    return intervalId;
+  };
+
+  const updateOrderStatuses = () => {
+    try {
+      const storedOrders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+      let ordersUpdated = false;
+      
+      const updatedOrders = storedOrders.map(order => {
+        const now = new Date();
+        const orderDate = new Date(order.createdAt);
+        const timeDifference = now - orderDate;
+        
+        // 1 minuto = 60000 ms, 2 minutos = 120000 ms
+        const oneMinute = 60000;
+        const twoMinutes = 120000;
+        
+        let newStatus = order.status;
+        
+        // Solo cambiar estado si no está cancelado
+        if (order.status !== 'cancelled') {
+          if (order.status === 'pending' && timeDifference >= oneMinute) {
+            newStatus = 'processing';
+            ordersUpdated = true;
+          } else if (order.status === 'processing' && timeDifference >= twoMinutes) {
+            newStatus = 'completed';
+            ordersUpdated = true;
+          }
+        }
+        
+        return newStatus !== order.status 
+          ? { ...order, status: newStatus, updatedAt: now.toISOString() }
+          : order;
+      });
+      
+      if (ordersUpdated) {
+        localStorage.setItem('orderHistory', JSON.stringify(updatedOrders));
+        setOrders(updatedOrders);
+        
+        // Mostrar notificación de cambio de estado
+        const newlyCompleted = updatedOrders.filter(order => 
+          order.status === 'completed' && 
+          storedOrders.find(orig => orig._id === order._id)?.status === 'processing'
+        );
+        
+        const newlyProcessing = updatedOrders.filter(order => 
+          order.status === 'processing' && 
+          storedOrders.find(orig => orig._id === order._id)?.status === 'pending'
+        );
+        
+        newlyProcessing.forEach(order => {
+          toast.info(`📦 Orden #${order.orderNumber || order._id?.slice(-6)} está siendo procesada`, {
+            autoClose: 4000,
+            style: { backgroundColor: '#007bff', color: 'white' }
+          });
+        });
+        
+        newlyCompleted.forEach(order => {
+          toast.success(`✅ Orden #${order.orderNumber || order._id?.slice(-6)} completada - ¡Ya puedes valorar tus productos!`, {
+            autoClose: 5000,
+            style: { backgroundColor: '#28a745', color: 'white' }
+          });
+        });
+      }
+    } catch (error) {
+      console.error('Error actualizando estados de órdenes:', error);
+    }
+  };
 
   const loadOrdersFromLocalStorage = () => {
     try {
@@ -55,6 +139,65 @@ function OrderHistory() {
       console.error('Error actualizando orden:', error);
       return false;
     }
+  };
+
+  // Función para obtener valoración existente de un producto
+  const getExistingRating = (orderId, productId) => {
+    try {
+      const ratings = JSON.parse(localStorage.getItem('productRatings') || '[]');
+      return ratings.find(rating => rating.orderId === orderId && rating.productId === productId);
+    } catch (error) {
+      console.error('Error obteniendo valoración:', error);
+      return null;
+    }
+  };
+
+  // Función para verificar si una orden puede ser valorada
+  const canRateOrder = (order) => {
+    return ['completed', 'delivered'].includes(order.status);
+  };
+
+  // Función para verificar si un producto específico puede ser valorado
+  const canRateProduct = (order, product) => {
+    return canRateOrder(order) && !product.rated;
+  };
+
+  // Función para abrir modal de valoración
+  const openRatingModal = (order, product) => {
+    const existingRating = getExistingRating(order._id, product.product_id);
+    setSelectedProductForRating({
+      orderId: order._id,
+      productId: product.product_id,
+      productName: product.name,
+      productImage: product.image,
+      existingRating
+    });
+    setRatingModalOpen(true);
+  };
+
+  const closeRatingModal = () => {
+    setRatingModalOpen(false);
+    setSelectedProductForRating(null);
+  };
+
+  const handleRatingSubmitted = (ratingData) => {
+    // Actualizar la orden para marcar el producto como valorado
+    const updatedOrders = orders.map(order => {
+      if (order._id === ratingData.orderId) {
+        const updatedProducts = order.products.map(product => {
+          if (product.product_id === ratingData.productId) {
+            return { ...product, rated: true, ratingId: ratingData.ratingId };
+          }
+          return product;
+        });
+        return { ...order, products: updatedProducts };
+      }
+      return order;
+    });
+    
+    setOrders(updatedOrders);
+    localStorage.setItem('orderHistory', JSON.stringify(updatedOrders));
+    closeRatingModal();
   };
 
   const filteredOrders = orders.filter(order => {
@@ -125,7 +268,7 @@ function OrderHistory() {
   const getRemainingTime = (cancelledAt) => {
     const now = new Date();
     const cancelledDate = new Date(cancelledAt);
-    const twoMinutesLater = new Date(cancelledDate.getTime() + 2 * 60 * 1000); // Cambiar a 2 minutos
+    const twoMinutesLater = new Date(cancelledDate.getTime() + 2 * 60 * 1000);
     const timeLeft = twoMinutesLater - now;
     
     if (timeLeft <= 0) {
@@ -148,7 +291,6 @@ function OrderHistory() {
     }
 
     try {
-      // Buscar la orden
       const order = orders.find(o => o._id === orderId);
       if (!order) {
         toast.error('Orden no encontrada');
@@ -179,7 +321,6 @@ function OrderHistory() {
         }
       }
 
-      // Actualizar estado de la orden a cancelada con timestamp
       const cancelledAt = new Date().toISOString();
       const updated = updateOrderInLocalStorage(orderId, { 
         status: 'cancelled',
@@ -187,30 +328,25 @@ function OrderHistory() {
       });
       
       if (updated) {
-        // Mostrar que la orden se canceló
         toast.success('✅ Orden cancelada exitosamente', {
           autoClose: 3000,
           style: { backgroundColor: '#28a745', color: 'white' }
         });
         
-        // Mostrar información sobre la eliminación automática
         toast.info('🗑️ La orden será eliminada automáticamente en 2 minutos', {
           autoClose: 5000,
           style: { backgroundColor: '#17a2b8', color: 'white' }
         });
         
-        // Programar eliminación automática después de 2 minutos
         setTimeout(() => {
           deleteOrderFromLocalStorage(orderId);
-          // Recargar órdenes si la página aún está abierta
           loadOrdersFromLocalStorage();
           toast.info('🗑️ Orden cancelada eliminada automáticamente', {
             autoClose: 3000,
             style: { backgroundColor: '#6c757d', color: 'white' }
           });
-        }, 2 * 60 * 1000); // 2 minutos en milisegundos
+        }, 2 * 60 * 1000);
         
-        // Notificar actualización de productos para refrescar stock
         window.dispatchEvent(new CustomEvent('productsUpdated'));
         closeModal();
       } else {
@@ -236,34 +372,28 @@ function OrderHistory() {
     }
   };
 
-  // Función para verificar y eliminar órdenes canceladas vencidas al cargar
   const cleanupCancelledOrders = () => {
     try {
       const storedOrders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
       const now = new Date();
-      const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000); // Cambiar a 2 minutos
+      const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
       
       const validOrders = storedOrders.filter(order => {
-        // Mantener órdenes que NO están canceladas
         if (order.status !== 'cancelled') return true;
         
-        // Para órdenes canceladas, verificar si han pasado 2 minutos
         if (order.cancelledAt) {
           const cancelledDate = new Date(order.cancelledAt);
-          return cancelledDate > twoMinutesAgo; // Mantener si fue cancelada hace menos de 2 minutos
+          return cancelledDate > twoMinutesAgo;
         }
         
-        // Si no tiene cancelledAt, asumir que fue cancelada hace mucho tiempo
         return false;
       });
       
-      // Si se eliminaron órdenes, actualizar localStorage
       if (validOrders.length !== storedOrders.length) {
         localStorage.setItem('orderHistory', JSON.stringify(validOrders));
         const removedCount = storedOrders.length - validOrders.length;
         console.log(`Se eliminaron ${removedCount} órdenes canceladas vencidas`);
         
-        // Mostrar notificación si se eliminaron órdenes al cargar
         if (removedCount > 0) {
           toast.info(`🗑️ Se eliminaron ${removedCount} orden${removedCount !== 1 ? 'es' : ''} cancelada${removedCount !== 1 ? 's' : ''} vencida${removedCount !== 1 ? 's' : ''}`, {
             autoClose: 4000,
@@ -366,7 +496,6 @@ function OrderHistory() {
                   }}
                 >
                   {getStatusText(order.status)}
-                  {/* Indicador visual para órdenes canceladas que se eliminarán pronto */}
                   {order.status === 'cancelled' && order.cancelledAt && (
                     <span style={{
                       position: 'absolute',
@@ -406,6 +535,15 @@ function OrderHistory() {
                   <div className="more-items">+{order.products.length - 3}</div>
                 )}
               </div>
+
+              {/* Indicador de valoración disponible */}
+              {canRateOrder(order) && (
+                <div className="rating-available">
+                  <span className="rating-badge">
+                    ⭐ {order.products?.some(p => !p.rated) ? 'Valorar productos' : 'Productos valorados'}
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -467,26 +605,70 @@ function OrderHistory() {
               
               <div className="order-items-list">
                 <h3>Productos Ordenados</h3>
-                {(selectedOrder.products || []).map((item, index) => (
-                  <div key={index} className="modal-item">
-                    <img 
-                      src={item.image || '/placeholder-image.jpg'} 
-                      alt={item.name || 'Producto'}
-                      onError={(e) => {
-                        e.target.src = '/placeholder-image.jpg';
-                      }}
-                    />
-                    <div className="item-details">
-                      <h4>{item.name || 'Producto sin nombre'}</h4>
-                      <p>{item.description || 'Sin descripción'}</p>
-                      <div className="item-pricing">
-                        <span>Cantidad: {item.quantity || 0}</span>
-                        <span>Precio unitario: ${item.price?.toFixed(2) || '0.00'}</span>
-                        <span className="item-total">Total: ${item.totalPrice?.toFixed(2) || '0.00'}</span>
+                {(selectedOrder.products || []).map((item, index) => {
+                  const existingRating = getExistingRating(selectedOrder._id, item.product_id);
+                  
+                  return (
+                    <div key={index} className="modal-item">
+                      <img 
+                        src={item.image || '/placeholder-image.jpg'} 
+                        alt={item.name || 'Producto'}
+                        onError={(e) => {
+                          e.target.src = '/placeholder-image.jpg';
+                        }}
+                      />
+                      <div className="item-details">
+                        <h4>{item.name || 'Producto sin nombre'}</h4>
+                        <p>{item.description || 'Sin descripción'}</p>
+                        <div className="item-pricing">
+                          <span>Cantidad: {item.quantity || 0}</span>
+                          <span>Precio unitario: ${item.price?.toFixed(2) || '0.00'}</span>
+                          <span className="item-total">Total: ${item.totalPrice?.toFixed(2) || '0.00'}</span>
+                        </div>
+                        
+                        {/* Mostrar valoración existente o botón para valorar */}
+                        {canRateProduct(selectedOrder, item) ? (
+                          <div className="item-rating-section">
+                            <button 
+                              className="rate-product-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openRatingModal(selectedOrder, item);
+                              }}
+                            >
+                              ⭐ Valorar producto
+                            </button>
+                          </div>
+                        ) : canRateOrder(selectedOrder) && item.rated && existingRating ? (
+                          <div className="item-rating-section">
+                            <div className="existing-rating">
+                              <div className="rating-display">
+                                <span className="stars">
+                                  {'★'.repeat(existingRating.stars)}{'☆'.repeat(5 - existingRating.stars)}
+                                </span>
+                                <span className="rating-info">
+                                  {existingRating.stars}/5 - {existingRating.deliveryOnTime ? ' ✅ A tiempo' : ' ❌ Tarde'}
+                                </span>
+                              </div>
+                              {existingRating.comment && (
+                                <p className="rating-comment">"{existingRating.comment}"</p>
+                              )}
+                              <button 
+                                className="edit-rating-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openRatingModal(selectedOrder, item);
+                                }}
+                              >
+                                ✏️ Editar valoración
+                              </button>
+                            </div>
+                          </div>
+                        ) : null}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               
               <div className="modal-actions">
@@ -499,7 +681,6 @@ function OrderHistory() {
                   </button>
                 )}
                 
-                {/* Mostrar tiempo restante para órdenes canceladas */}
                 {selectedOrder.status === 'cancelled' && selectedOrder.cancelledAt && (
                   <div className="cancellation-info">
                     <p style={{ 
@@ -525,6 +706,19 @@ function OrderHistory() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal de valoración de productos */}
+      {ratingModalOpen && selectedProductForRating && (
+        <ProductRating
+          orderId={selectedProductForRating.orderId}
+          productId={selectedProductForRating.productId}
+          productName={selectedProductForRating.productName}
+          productImage={selectedProductForRating.productImage}
+          existingRating={selectedProductForRating.existingRating}
+          onRatingSubmitted={handleRatingSubmitted}
+          onClose={closeRatingModal}
+        />
       )}
     </div>
   );

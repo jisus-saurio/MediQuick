@@ -6,6 +6,7 @@ function Navbar({ isAdmin }) {
   const [active, setActive] = useState("Home");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,6 +16,21 @@ function Navbar({ isAdmin }) {
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    // Verificar si el usuario está logueado
+    const userSession = localStorage.getItem('userSession');
+    setIsLoggedIn(!!userSession);
+    
+    // Escuchar cambios en el estado de login
+    const handleLoginChange = () => {
+      const userSession = localStorage.getItem('userSession');
+      setIsLoggedIn(!!userSession);
+    };
+
+    window.addEventListener('loginStateChanged', handleLoginChange);
+    return () => window.removeEventListener('loginStateChanged', handleLoginChange);
   }, []);
 
   const handleClick = (name) => {
@@ -27,6 +43,25 @@ function Navbar({ isAdmin }) {
     setActive("Login");
     setIsOpen(false);
     navigate("/login");
+  };
+
+  const handleLogout = () => {
+    // Limpiar datos de sesión
+    localStorage.removeItem('userSession');
+    localStorage.removeItem('userProfile');
+    
+    // Disparar evento de cambio de estado
+    window.dispatchEvent(new CustomEvent('loginStateChanged'));
+    
+    // Redirigir al home
+    setActive("Home");
+    setIsOpen(false);
+    navigate("/");
+    
+    // Mostrar mensaje de confirmación si hay toast disponible
+    if (window.toast) {
+      window.toast.success('Sesión cerrada correctamente');
+    }
   };
 
   return (
@@ -60,20 +95,21 @@ function Navbar({ isAdmin }) {
               </div>
             ))}
 
-            {/* Nuevo enlace al historial de compras */}
+
+            {/* Enlace al perfil (siempre visible) */}
             <div
-              onClick={() => handleClick("Order History")}
+              onClick={() => handleClick("Profile")}
               style={styles.menuItem}
             >
               <span
                 style={{
                   ...styles.link,
-                  color: active === "Order History" ? "#ff6600" : "#004466",
+                  color: active === "Profile" ? "#ff6600" : "#004466",
                 }}
               >
-                Mis Compras
+                👤 Mi Perfil
               </span>
-              {active === "Order History" && <div style={styles.underline}></div>}
+              {active === "Profile" && <div style={styles.underline}></div>}
             </div>
 
             {isAdmin && (
@@ -87,7 +123,7 @@ function Navbar({ isAdmin }) {
                     color: active === "HomeAdmin" ? "#ff6600" : "#004466",
                   }}
                 >
-                  Admin Panel
+                  ⚙️ Admin Panel
                 </span>
                 {active === "HomeAdmin" && <div style={styles.underline}></div>}
               </div>
@@ -97,12 +133,24 @@ function Navbar({ isAdmin }) {
 
         <div style={styles.rightSection}>
           <CartIcon />
-          <div onClick={handleLoginClick} style={styles.loginContainer}>
-            <button style={styles.loginButton}>Login</button>
-            {active === "Login" && (
-              <div style={{ ...styles.underline, marginTop: "5px" }}></div>
-            )}
-          </div>
+          
+          {/* Mostrar botón de login o logout dependiendo del estado */}
+          {isLoggedIn ? (
+            <div onClick={handleLogout} style={styles.loginContainer}>
+              <button style={styles.logoutButton}>
+                🚪 Cerrar Sesión
+              </button>
+            </div>
+          ) : (
+            <div onClick={handleLoginClick} style={styles.loginContainer}>
+              <button style={styles.loginButton}>
+                🔑 Login
+              </button>
+              {active === "Login" && (
+                <div style={{ ...styles.underline, marginTop: "5px" }}></div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -120,13 +168,13 @@ function Navbar({ isAdmin }) {
               {item}
             </div>
           ))}
-          
-          {/* Historial de compras en menú móvil */}
+
+          {/* Perfil en menú móvil (siempre visible) */}
           <div
-            onClick={() => handleClick("Order History")}
+            onClick={() => handleClick("Profile")}
             style={styles.overlayItem}
           >
-            Mis Compras
+            👤 Mi Perfil
           </div>
           
           {isAdmin && (
@@ -134,15 +182,26 @@ function Navbar({ isAdmin }) {
               onClick={() => handleClick("HomeAdmin")}
               style={styles.overlayItem}
             >
-              Admin Panel
+              ⚙️ Admin Panel
             </div>
           )}
+          
           <div
             onClick={() => handleClick("Cart")}
             style={styles.overlayItem}
           >
-            Carrito
+            🛒 Carrito
           </div>
+
+          {/* Botón de logout en menú móvil */}
+          {isLoggedIn && (
+            <div
+              onClick={handleLogout}
+              style={styles.overlayItem}
+            >
+              🚪 Cerrar Sesión
+            </div>
+          )}
         </div>
       )}
     </nav>
@@ -159,8 +218,8 @@ function getPath(name) {
       return "/aboutUs";
     case "Contact":
       return "/Formulario";
-    case "Order History":
-      return "/OrderHistory";
+    case "Profile":
+      return "/profile";
     case "HomeAdmin":
       return "/HomeAdmin";
     case "Cart":
@@ -199,7 +258,7 @@ const styles = {
   },
   menu: {
     display: "flex",
-    gap: "30px",
+    gap: "25px",
     alignItems: "center",
   },
   menuItem: {
@@ -207,11 +266,13 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     cursor: "pointer",
+    transition: "all 0.3s ease",
   },
   link: {
     textDecoration: "none",
     fontWeight: "bold",
-    fontSize: "18px",
+    fontSize: "16px",
+    transition: "all 0.3s ease",
   },
   underline: {
     width: "100%",
@@ -234,14 +295,28 @@ const styles = {
     alignItems: "center",
   },
   loginButton: {
-    background: "#7dbbe6",
+    background: "linear-gradient(135deg, #7dbbe6 0%, #5a9bd4 100%)",
     border: "none",
     padding: "10px 20px",
     borderRadius: "20px",
     color: "white",
     fontWeight: "bold",
-    fontSize: "18px",
+    fontSize: "16px",
     cursor: "pointer",
+    transition: "all 0.3s ease",
+    boxShadow: "0 2px 8px rgba(125, 187, 230, 0.3)",
+  },
+  logoutButton: {
+    background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "20px",
+    color: "white",
+    fontWeight: "bold",
+    fontSize: "16px",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    boxShadow: "0 2px 8px rgba(220, 53, 69, 0.3)",
   },
   overlayMenu: {
     position: "fixed",
@@ -256,13 +331,19 @@ const styles = {
     alignItems: "center",
     zIndex: 999,
     padding: "20px",
+    background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
   },
   overlayItem: {
-    fontSize: "24px",
-    margin: "20px 0",
+    fontSize: "20px",
+    margin: "15px 0",
     fontWeight: "bold",
     cursor: "pointer",
     color: "#004466",
+    padding: "10px 20px",
+    borderRadius: "10px",
+    transition: "all 0.3s ease",
+    textAlign: "center",
+    minWidth: "200px",
   },
   closeBtn: {
     position: "absolute",
@@ -273,6 +354,7 @@ const styles = {
     border: "none",
     cursor: "pointer",
     color: "#004466",
+    fontWeight: "bold",
   },
 };
 
