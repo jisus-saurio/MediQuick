@@ -12,44 +12,6 @@ function Products() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // Verificar estado de login
-  useEffect(() => {
-    checkLoginStatus();
-    
-    // Verificar periódicamente el estado de autenticación
-    const authCheckInterval = setInterval(() => {
-      checkLoginStatus();
-    }, 30000); // Cada 30 segundos
-
-    return () => {
-      clearInterval(authCheckInterval);
-    };
-  }, []);
-
-  const checkLoginStatus = async () => {
-    try {
-      // Intentar verificar autenticación de forma silenciosa
-      const response = await fetch('/api/auth/verify', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
-      });
-      
-      setIsLoggedIn(response.ok);
-    } catch (error) {
-      console.error('Error al verificar estado de autenticación:', error);
-      // Error de red o servidor - asumir no logueado
-      setIsLoggedIn(false);
-    }
-    
-    // También verificar localStorage como fallback
-    const user = localStorage.getItem('currentUser') || localStorage.getItem('userToken');
-    if (user && !isLoggedIn) {
-      setIsLoggedIn(true);
-    }
-  };
 
   // Fetch productos, categorías y proveedores cuando el componente monta
   useEffect(() => {
@@ -65,18 +27,12 @@ function Products() {
       setProductos(prev => [...prev]);
     };
 
-    const handleLoginStatusChange = () => {
-      checkLoginStatus();
-    };
-
     window.addEventListener('productsUpdated', handleProductsUpdated);
     window.addEventListener('ratingsUpdated', handleRatingsUpdated);
-    window.addEventListener('loginStatusChanged', handleLoginStatusChange);
 
     return () => {
       window.removeEventListener('productsUpdated', handleProductsUpdated);
       window.removeEventListener('ratingsUpdated', handleRatingsUpdated);
-      window.removeEventListener('loginStatusChanged', handleLoginStatusChange);
     };
   }, []);
 
@@ -286,14 +242,6 @@ function Products() {
 
   return (
     <div className="products-page">
-      {/* Indicador de estado de conexión */}
-      {!isLoggedIn && (
-        <div className="connection-status">
-          <span className="status-indicator offline"></span>
-          <span className="status-text">Modo sin conexión</span>
-        </div>
-      )}
-
       <div className="search-bar">
         <input
           type="text"
@@ -334,35 +282,6 @@ function Products() {
               <div className="product-info">
                 <h3>{product.name}</h3>
                 <p className="product-price">${product.price}</p>
-                <p className={`product-stock ${product.stock <= 5 ? 'low-stock' : ''} ${product.stock === 0 ? 'no-stock' : ''}`}>
-                  Stock: {product.stock}
-                </p>
-                
-                {/* Mostrar estrellas de valoración si existe */}
-                {(() => {
-                  const rating = getProductRating(product._id);
-                  return rating.count > 0 ? (
-                    <div className="product-rating-stars">
-                      <span className="stars">
-                        {'★'.repeat(Math.floor(rating.average))}{'☆'.repeat(5 - Math.floor(rating.average))}
-                      </span>
-                      <span className="rating-count">
-                        ({rating.count})
-                      </span>
-                    </div>
-                  ) : null;
-                })()}
-                
-                <button
-                  className="buy-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openProductModal(product);
-                  }}
-                  disabled={product.stock === 0}
-                >
-                  {product.stock === 0 ? 'Sin Stock' : 'Ver Detalles'}
-                </button>
               </div>
             </div>
           ))
@@ -399,6 +318,26 @@ function Products() {
               <div className="product-info-section">
                 <h2>{selectedProduct.name}</h2>
                 <p className="product-description">{selectedProduct.description}</p>
+
+                {/* Mostrar stock en el modal */}
+                <p className={`product-stock ${selectedProduct.stock <= 5 ? 'low-stock' : ''} ${selectedProduct.stock === 0 ? 'no-stock' : ''}`}>
+                  Stock: {selectedProduct.stock} unidades
+                </p>
+
+                {/* Mostrar estrellas de valoración si existe */}
+                {(() => {
+                  const rating = getProductRating(selectedProduct._id);
+                  return rating.count > 0 ? (
+                    <div className="product-rating-stars">
+                      <span className="stars">
+                        {'★'.repeat(Math.floor(rating.average))}{'☆'.repeat(5 - Math.floor(rating.average))}
+                      </span>
+                      <span className="rating-count">
+                        ({rating.count})
+                      </span>
+                    </div>
+                  ) : null;
+                })()}
 
                 {/* Sistema de valoraciones estilo Google Play */}
                 {(() => {
@@ -446,16 +385,16 @@ function Products() {
 
                 <div className="product-details">
                   <p>
-                    <strong>Precio:</strong> ${selectedProduct.price}
+                    <strong>Precio:</strong> <span>${selectedProduct.price}</span>
                   </p>
                   <p>
-                    <strong>Stock disponible:</strong> {selectedProduct.stock} unidades
+                    <strong>Stock disponible:</strong> <span>{selectedProduct.stock} unidades</span>
                   </p>
                   <p>
-                    <strong>Categoría:</strong> {getNombreCategoria(selectedProduct.categoryId)}
+                    <strong>Categoría:</strong> <span>{getNombreCategoria(selectedProduct.categoryId)}</span>
                   </p>
                   <p>
-                    <strong>Proveedor:</strong> {getNombreProveedor(selectedProduct.supplierId)}
+                    <strong>Proveedor:</strong> <span>{getNombreProveedor(selectedProduct.supplierId)}</span>
                   </p>
                 </div>
 

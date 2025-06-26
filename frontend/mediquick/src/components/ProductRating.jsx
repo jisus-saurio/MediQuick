@@ -11,68 +11,13 @@ function ProductRating({
   onClose,
   isLoggedIn = true 
 }) {
-
-  // Determina si el componente está en modo visualización (sin orderId ni onRatingSubmitted)
-  const isViewMode = () => !orderId && !onRatingSubmitted;
   const [rating, setRating] = useState(existingRating?.stars || 0);
   const [comment, setComment] = useState(existingRating?.comment || '');
-  const [deliveryOnTime, setDeliveryOnTime] = useState(existingRating?.deliveryOnTime || true);
+  const [deliveryOnTime, setDeliveryOnTime] = useState(existingRating?.deliveryOnTime !== undefined ? existingRating.deliveryOnTime : true);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Estados para modo visualización
-  const [averageRating, setAverageRating] = useState(0);
-  const [totalRatings, setTotalRatings] = useState(0);
-  const [deliveryStats, setDeliveryStats] = useState({ onTime: 0, late: 0 });
 
-  // Cargar todas las valoraciones si estamos en modo visualización
-  useEffect(() => {
-    if (isViewMode()) {
-      loadAllRatings();
-    }
-  }, [productId]); // Removido viewMode de las dependencias
-
-  // Escuchar cambios en las valoraciones si estamos en modo visualización
-  useEffect(() => {
-    if (isViewMode()) {
-      const handleRatingsUpdated = () => {
-        loadAllRatings();
-      };
-
-      window.addEventListener('ratingsUpdated', handleRatingsUpdated);
-      return () => {
-        window.removeEventListener('ratingsUpdated', handleRatingsUpdated);
-      };
-    }
-  }, []); // Sin dependencias
-
-  const loadAllRatings = () => {
-    try {
-      const allProductRatings = JSON.parse(localStorage.getItem('productRatings') || '[]');
-      const productRatings = allProductRatings.filter(r => r.productId === productId);
-      
-      setAllRatings(productRatings);
-      setTotalRatings(productRatings.length);
-      
-      if (productRatings.length > 0) {
-        const avgStars = productRatings.reduce((sum, r) => sum + r.stars, 0) / productRatings.length;
-        setAverageRating(avgStars);
-        
-        const onTimeCount = productRatings.filter(r => r.deliveryOnTime).length;
-        setDeliveryStats({ 
-          onTime: onTimeCount, 
-          late: productRatings.length - onTimeCount 
-        });
-      } else {
-        setAverageRating(0);
-        setDeliveryStats({ onTime: 0, late: 0 });
-      }
-    } catch (error) {
-      console.error('Error cargando valoraciones:', error);
-      setTotalRatings(0);
-      setAverageRating(0);
-      setDeliveryStats({ onTime: 0, late: 0 });
-    }
+  console.log('ProductRating props:', { orderId, productId, existingRating, isLoggedIn });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,6 +47,8 @@ function ProductRating({
         updatedAt: new Date().toISOString()
       };
 
+      console.log('Guardando valoración:', ratingData);
+
       // Guardar en localStorage
       const ratings = JSON.parse(localStorage.getItem('productRatings') || '[]');
       
@@ -111,10 +58,12 @@ function ProductRating({
           r.ratingId === existingRating.ratingId ? ratingData : r
         );
         localStorage.setItem('productRatings', JSON.stringify(updatedRatings));
+        console.log('Valoración actualizada');
       } else {
         // Crear nueva valoración
         ratings.push(ratingData);
         localStorage.setItem('productRatings', JSON.stringify(ratings));
+        console.log('Nueva valoración creada');
       }
 
       // Notificar al componente padre
@@ -135,32 +84,19 @@ function ProductRating({
   };
 
   const handleStarClick = (starValue) => {
-    // Solo permitir en modo formulario
-    if (!isViewMode()) {
-      setRating(starValue);
-    }
+    console.log('Estrella clickeada:', starValue);
+    setRating(starValue);
   };
 
   const handleStarHover = (starValue) => {
-    // Solo permitir en modo formulario
-    if (!isViewMode()) {
-      setHoveredRating(starValue);
-    }
+    setHoveredRating(starValue);
   };
 
   const handleStarLeave = () => {
-    // Solo permitir en modo formulario
-    if (!isViewMode()) {
-      setHoveredRating(0);
-    }
+    setHoveredRating(0);
   };
 
   const getStarClass = (starIndex) => {
-    if (isViewMode()) {
-      // En modo visualización, no hay interactividad
-      return 'star';
-    }
-    // En modo formulario, usar la lógica normal
     const currentRating = hoveredRating || rating;
     return starIndex <= currentRating ? 'star active' : 'star';
   };
@@ -183,10 +119,7 @@ function ProductRating({
         
         <div className="rating-modal-header">
           <h2>
-            {isViewMode() 
-              ? `Valoraciones de ${productName}` 
-              : existingRating ? 'Editar Valoración' : 'Valorar Producto'
-            }
+            {existingRating ? 'Editar Valoración' : 'Valorar Producto'}
           </h2>
         </div>
 
@@ -323,5 +256,5 @@ function ProductRating({
     </div>
   );
 }
-}
+
 export default ProductRating;
