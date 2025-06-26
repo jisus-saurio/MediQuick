@@ -27,7 +27,6 @@ const LoginForm = () => {
   const handleLogin = async () => {
     const { email, password } = formData;
 
-    // Verifica que el email y la contraseña no estén vacíos
     if (!email || !password) {
       toast.error("Email y contraseña son requeridos");
       return;
@@ -43,21 +42,90 @@ const LoginForm = () => {
     try {
       const result = await login(email, password);
       
-      if (result.success) {
+      console.log('Resultado del login:', result);
+      
+      if (result && result.success) {
+        // Tu AuthContext devuelve: { success, message, userType, redirectTo }
+        // No devuelve un objeto user, así que lo creamos aquí
+        
+        const userData = {
+          email: email,
+          userType: result.userType
+        };
+        
+        // Guardar información de sesión
+        const sessionData = {
+          userId: `user_${Date.now()}`, // Generar ID temporal hasta obtener el real
+          email: email,
+          userType: result.userType,
+          loginTime: new Date().toISOString()
+        };
+        
+        console.log('Guardando sessionData:', sessionData);
+        localStorage.setItem('userSession', JSON.stringify(sessionData));
+        
+        // Crear perfil básico
+        const basicProfile = {
+          name: email.split('@')[0], // Usar la parte antes del @ como nombre temporal
+          email: email,
+          phone: 'No especificado',
+          address: 'No especificado'
+        };
+        
+        // Intentar obtener el ID real del usuario desde el backend
+        if (result.userType === 'User') {
+          try {
+            // Buscar el usuario por email para obtener su ID real
+            const usersResponse = await fetch('/api/users');
+            if (usersResponse.ok) {
+              const users = await usersResponse.json();
+              const currentUser = users.find(user => user.email === email);
+              
+              if (currentUser) {
+                // Actualizar sessionData con el ID real
+                sessionData.userId = currentUser._id;
+                localStorage.setItem('userSession', JSON.stringify(sessionData));
+                
+                // Actualizar perfil con datos reales
+                const realProfile = {
+                  name: currentUser.name,
+                  email: currentUser.email,
+                  phone: currentUser.phone,
+                  address: currentUser.address
+                };
+                localStorage.setItem('userProfile', JSON.stringify(realProfile));
+              } else {
+                // Si no se encuentra, usar perfil básico
+                localStorage.setItem('userProfile', JSON.stringify(basicProfile));
+              }
+            } else {
+              localStorage.setItem('userProfile', JSON.stringify(basicProfile));
+            }
+          } catch (error) {
+            console.warn('Error obteniendo datos del usuario:', error);
+            localStorage.setItem('userProfile', JSON.stringify(basicProfile));
+          }
+        } else {
+          // Para admins o empleados, usar perfil básico
+          localStorage.setItem('userProfile', JSON.stringify(basicProfile));
+        }
+        
+        // Disparar evento para actualizar navegación
+        window.dispatchEvent(new CustomEvent('loginStateChanged'));
+        
         toast.success("Inicio de sesión exitoso");
         
-        // Usar la redirección que viene del backend
+        // Redirigir usando la ruta del AuthContext
         const redirectPath = result.redirectTo || "/";
-        
         setTimeout(() => {
           navigate(redirectPath);
         }, 1000);
       } else {
-        toast.error(result.message || "Error al iniciar sesión");
+        toast.error(result?.message || "Error al iniciar sesión");
       }
     } catch (error) {
+      console.error("Error completo en login:", error);
       toast.error("Error de conexión. Intente nuevamente.");
-      console.error("Error en login:", error);
     } finally {
       setIsLoading(false);
     }

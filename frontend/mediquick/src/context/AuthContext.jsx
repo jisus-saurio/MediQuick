@@ -53,10 +53,12 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
 
       if (data.success) {
-        // Actualizar estado del usuario
+        // Crear userData más completo
         const userData = { 
-          email, 
-          userType: data.userType 
+          id: data.user?.id || data.user?._id,
+          email: data.user?.email || email, 
+          userType: data.userType || data.user?.userType,
+          name: data.user?.name
         };
         
         setUser(userData);
@@ -67,6 +69,7 @@ export const AuthProvider = ({ children }) => {
         return { 
           success: true, 
           message: data.message,
+          user: userData, // Ahora devolvemos el objeto user
           userType: data.userType,
           redirectTo: data.redirectTo // Esta viene del backend
         };
@@ -98,6 +101,8 @@ export const AuthProvider = ({ children }) => {
       // Limpiar estado local independientemente del resultado
       setUser(null);
       localStorage.removeItem("user");
+      localStorage.removeItem("userSession");
+      localStorage.removeItem("userProfile");
     }
   };
 
@@ -136,6 +141,8 @@ export const AuthProvider = ({ children }) => {
       if (response.status === 401) {
         setUser(null);
         localStorage.removeItem("user");
+        localStorage.removeItem("userSession");
+        localStorage.removeItem("userProfile");
       }
       
       return response;
@@ -156,7 +163,9 @@ export const AuthProvider = ({ children }) => {
     getUserType,
     checkAuthStatus,
     fetchWithAuth,
-    API
+    API,
+    // Alias para compatibilidad
+    User: user
   };
 
   return (

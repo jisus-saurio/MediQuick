@@ -17,35 +17,102 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const [editForm, setEditForm] = useState({ ...userInfo });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     checkLoginStatus();
     loadUserData();
-    loadOrderHistory();
+    
+    // Escuchar cambios en el estado de login
+    const handleLoginChange = () => {
+      checkLoginStatus();
+      loadUserData();
+      loadOrderHistory();
+    };
+
+    const handleOrdersUpdate = () => {
+      loadOrderHistory();
+    };
+
+    window.addEventListener('loginStateChanged', handleLoginChange);
+    window.addEventListener('ordersUpdated', handleOrdersUpdate);
+
+    return () => {
+      window.removeEventListener('loginStateChanged', handleLoginChange);
+      window.removeEventListener('ordersUpdated', handleOrdersUpdate);
+    };
   }, []);
+
+  // Recargar órdenes cuando cambie el usuario actual
+  useEffect(() => {
+    if (currentUser) {
+      loadOrderHistory();
+    }
+  }, [currentUser, isLoggedIn]);
 
   const checkLoginStatus = () => {
     const userSession = localStorage.getItem('userSession');
-    setIsLoggedIn(!!userSession);
+    if (userSession) {
+      try {
+        const sessionData = JSON.parse(userSession);
+        setIsLoggedIn(true);
+        setCurrentUser(sessionData);
+      } catch (error) {
+        console.error('Error parsing session data:', error);
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+      }
+    } else {
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+    }
   };
 
-  const loadUserData = () => {
+  const loadUserData = async () => {
     try {
       const userSession = localStorage.getItem('userSession');
       if (userSession) {
-        // Usuario logueado - cargar datos reales
-        const savedUser = JSON.parse(localStorage.getItem('userProfile') || '{}');
-        const defaultUser = {
-          name: 'Usuario Demo',
-          email: 'usuario@mediquick.com',
-          phone: '+503 7000-0000',
-          address: 'San Salvador, El Salvador',
-          password: '********'
-        };
+        const sessionData = JSON.parse(userSession);
         
-        const userData = Object.keys(savedUser).length > 0 ? savedUser : defaultUser;
-        setUserInfo(userData);
-        setEditForm(userData);
+        // Intentar cargar datos del backend primero
+        try {
+          const response = await fetch(`/api/users/${sessionData.userId}`);
+          if (response.ok) {
+            const userData = await response.json();
+            const userProfile = {
+              name: userData.name,
+              email: userData.email,
+              phone: userData.phone,
+              address: userData.address,
+              password: '********'
+            };
+            setUserInfo(userProfile);
+            setEditForm(userProfile);
+            // Actualizar localStorage también
+            localStorage.setItem('userProfile', JSON.stringify(userProfile));
+          } else {
+            throw new Error('No se pudieron cargar datos del servidor');
+          }
+        } catch (error) {
+          console.warn('Error cargando del servidor, usando datos locales:', error);
+          // Fallback a datos locales
+          const savedUser = JSON.parse(localStorage.getItem('userProfile') || '{}');
+          if (Object.keys(savedUser).length > 0) {
+            setUserInfo(savedUser);
+            setEditForm(savedUser);
+          } else {
+            // Datos por defecto si no hay nada
+            const defaultUser = {
+              name: sessionData.email.split('@')[0],
+              email: sessionData.email,
+              phone: 'No especificado',
+              address: 'No especificado',
+              password: '********'
+            };
+            setUserInfo(defaultUser);
+            setEditForm(defaultUser);
+          }
+        }
       } else {
         // Usuario no logueado - mostrar datos por defecto
         const guestUser = {
@@ -68,10 +135,27 @@ function Profile() {
 
   const loadOrderHistory = () => {
     try {
-      if (isLoggedIn) {
-        const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-        setOrders(orderHistory);
+      if (isLoggedIn && currentUser) {
+        console.log('Cargando órdenes para usuario:', currentUser); // Debug
+        
+        // Solo cargar órdenes del usuario actual
+        const allOrders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+        console.log('Todas las órdenes encontradas:', allOrders.length); // Debug
+        
+        const userOrders = allOrders.filter(order => {
+          const matchesUserId = order.userId === currentUser.userId;
+          const matchesEmail = order.customerInfo && order.customerInfo.email === currentUser.email;
+          const matchesUserEmail = order.userEmail === currentUser.email;
+          
+          return matchesUserId || matchesEmail || matchesUserEmail;
+        });
+        
+        console.log('Órdenes del usuario filtradas:', userOrders.length); // Debug
+        console.log('Órdenes del usuario:', userOrders); // Debug
+        
+        setOrders(userOrders);
       } else {
+        console.log('Usuario no logueado, limpiando órdenes'); // Debug
         setOrders([]);
       }
     } catch (error) {
@@ -80,7 +164,7 @@ function Profile() {
     }
   };
 
-  const saveUserData = () => {
+  const saveUserData = async () => {
     if (!isLoggedIn) {
       toast.error('Por favor inicia sesión para editar tu perfil');
       return;
@@ -108,7 +192,32 @@ function Profile() {
         return;
       }
 
-      // Guardar en localStorage
+      // Intentar actualizar en el backend
+      try {
+        const response = await fetch(`/api/users/${currentUser.userId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: editForm.name,
+            email: editForm.email,
+            phone: editForm.phone,
+            address: editForm.address,
+            password: userInfo.password === '********' ? undefined : editForm.password
+          })
+        });
+
+        if (response.ok) {
+          toast.success('Perfil actualizado en el servidor');
+        } else {
+          console.warn('No se pudo actualizar en el servidor');
+        }
+      } catch (error) {
+        console.warn('Error actualizando en servidor:', error);
+      }
+
+      // Guardar en localStorage como respaldo
       localStorage.setItem('userProfile', JSON.stringify(editForm));
       setUserInfo(editForm);
       setIsEditing(false);

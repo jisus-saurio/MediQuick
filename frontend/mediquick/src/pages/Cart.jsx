@@ -15,14 +15,59 @@ function Cart() {
     paymentMethod: 'card'
   });
   const [showOrderForm, setShowOrderForm] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    checkLoginStatus();
     loadCartFromStorage();
   }, []);
 
   useEffect(() => {
     calculateTotal();
   }, [cartItems]);
+
+  // Recargar estado cuando cambie la sesión
+  useEffect(() => {
+    const handleLoginChange = () => {
+      checkLoginStatus();
+    };
+
+    window.addEventListener('loginStateChanged', handleLoginChange);
+    return () => window.removeEventListener('loginStateChanged', handleLoginChange);
+  }, []);
+
+  const checkLoginStatus = () => {
+    const userSession = localStorage.getItem('userSession');
+    if (userSession) {
+      try {
+        const sessionData = JSON.parse(userSession);
+        setIsLoggedIn(true);
+        setCurrentUser(sessionData);
+        
+        console.log('Usuario actual en Cart:', sessionData); // Debug
+        
+        // Pre-llenar formulario con datos del usuario si están disponibles
+        const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+        if (userProfile.name && userProfile.name !== 'Invitado') {
+          setOrderForm(prev => ({
+            ...prev,
+            customerName: userProfile.name || '',
+            email: userProfile.email || sessionData.email || '',
+            phone: userProfile.phone || '',
+            address: userProfile.address || ''
+          }));
+        }
+      } catch (error) {
+        console.error('Error parsing session data:', error);
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+      }
+    } else {
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+    }
+  };
 
   const loadCartFromStorage = () => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -113,10 +158,20 @@ function Cart() {
       // Obtener órdenes existentes
       const existingOrders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
       
+      // Asegurar que tenemos el usuario actual
+      if (!currentUser || !currentUser.userId) {
+        console.error('No hay usuario actual para asociar la orden');
+        throw new Error('Usuario no identificado');
+      }
+      
+      console.log('Creando orden para usuario:', currentUser); // Debug
+      
       // Crear nueva orden
       const newOrder = {
         _id: Date.now().toString(),
         orderNumber: `ORD-${Date.now()}`,
+        userId: currentUser.userId, // Asociar con el usuario actual
+        userEmail: currentUser.email, // También guardar email como respaldo
         products: orderData.items.map(item => ({
           product_id: item._id,
           name: item.name,
@@ -124,7 +179,8 @@ function Cart() {
           quantity: item.quantity,
           totalPrice: item.totalPrice,
           image: item.image,
-          description: item.description
+          description: item.description,
+          rated: false // Inicialmente no valorado
         })),
         total: orderData.total,
         customerInfo: orderData.customerInfo,
@@ -135,11 +191,15 @@ function Cart() {
         updatedAt: new Date().toISOString()
       };
       
+      console.log('Nueva orden creada:', newOrder); // Debug
+      
       // Agregar al inicio del array
       existingOrders.unshift(newOrder);
       
       // Guardar en localStorage
       localStorage.setItem('orderHistory', JSON.stringify(existingOrders));
+      
+      console.log('Orden guardada. Total de órdenes:', existingOrders.length); // Debug
       
       return newOrder;
     } catch (error) {
@@ -188,9 +248,17 @@ function Cart() {
       return;
     }
 
+    // Verificar que hay un usuario logueado para asociar la orden
+    if (!isLoggedIn || !currentUser) {
+      toast.warning('⚠️ Debes iniciar sesión para procesar la orden');
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
+      console.log('Procesando orden para usuario:', currentUser); // Debug
+
       // Crear la orden con la información del formulario
       const orderData = {
         items: cartItems,
@@ -236,9 +304,9 @@ function Cart() {
       // Mostrar información de la orden
       toast.info(`Orden #${savedOrder.orderNumber} creada exitosamente`);
 
-      // Opcional: redirigir al historial de órdenes después de 2 segundos
+      // Redirigir al historial de órdenes después de 2 segundos
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/OrderHistory';
       }, 2000);
       
     } catch (error) {
@@ -251,6 +319,10 @@ function Cart() {
 
   const goBack = () => {
     window.history.back();
+  };
+
+  const goToLogin = () => {
+    window.location.href = '/login';
   };
 
   if (cartItems.length === 0) {
@@ -276,6 +348,24 @@ function Cart() {
     <div className="cart-container">
       <ToastContainer />
       <h1>Carrito de Compras</h1>
+      
+      {/* Mensaje de información sobre login */}
+      {!isLoggedIn && (
+        <div className="login-info-banner">
+          <div className="info-content">
+            <span className="info-icon">💡</span>
+            <span className="info-text">
+              ¿Quieres valorar tus productos después de la compra? 
+            </span>
+            <button 
+              className="login-link-btn"
+              onClick={goToLogin}
+            >
+              Inicia sesión aquí
+            </button>
+          </div>
+        </div>
+      )}
       
       <div className="cart-content">
         <div className="cart-items">

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../style/Products.css';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ProductRatingsDisplay from '../components/ProductRatingsDisplay';
+import ProductRatingsDisplay from '../components/ProductRating';
 
 function Products() {
   const [productos, setProductos] = useState([]);
@@ -14,20 +14,45 @@ function Products() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showRatings, setShowRatings] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Verificar estado de login
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
+
+  const checkLoginStatus = () => {
+    // Verificar si hay un usuario logueado (puedes ajustar esta lógica según tu sistema de auth)
+    const user = localStorage.getItem('currentUser') || localStorage.getItem('userToken');
+    setIsLoggedIn(!!user);
+  };
 
   // Fetch productos, categorías y proveedores cuando el componente monta
   useEffect(() => {
     fetchInitialData();
 
-    // Escuchar eventos de actualización de productos
+    // Escuchar eventos de actualización de productos y valoraciones
     const handleProductsUpdated = () => {
       fetchProductos();
     };
 
+    const handleRatingsUpdated = () => {
+      // Forzar re-render para actualizar las valoraciones mostradas
+      setProductos(prev => [...prev]);
+    };
+
+    const handleLoginStatusChange = () => {
+      checkLoginStatus();
+    };
+
     window.addEventListener('productsUpdated', handleProductsUpdated);
+    window.addEventListener('ratingsUpdated', handleRatingsUpdated);
+    window.addEventListener('loginStatusChanged', handleLoginStatusChange);
 
     return () => {
       window.removeEventListener('productsUpdated', handleProductsUpdated);
+      window.removeEventListener('ratingsUpdated', handleRatingsUpdated);
+      window.removeEventListener('loginStatusChanged', handleLoginStatusChange);
     };
   }, []);
 
@@ -154,12 +179,20 @@ function Products() {
   const openProductModal = (product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
-    setShowRatings(false); // Iniciar en la pestaña de detalles
+    setShowRatings(false); // Siempre iniciar en la pestaña de detalles
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedProduct(null);
+    setShowRatings(false);
+  };
+
+  const switchToRatingsTab = () => {
+    setShowRatings(true);
+  };
+
+  const switchToDetailsTab = () => {
     setShowRatings(false);
   };
 
@@ -203,11 +236,11 @@ function Products() {
     e.target.onerror = null;
   };
 
-  const getStarDisplay = (rating) => {
-    if (rating === 0) return '';
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    return '★'.repeat(fullStars) + (hasHalfStar ? '☆' : '') + '☆'.repeat(5 - fullStars - (hasHalfStar ? 1 : 0));
+  const handleLoginRequired = () => {
+    toast.warning('Debes iniciar sesión para valorar productos', {
+      autoClose: 3000,
+      style: { backgroundColor: '#ffc107', color: '#333' }
+    });
   };
 
   if (loading) {
@@ -244,54 +277,52 @@ function Products() {
 
       <div className="product-grid">
         {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => {
-            const rating = getProductRating(product._id);
-            return (
-              <div
-                className="product-card"
-                key={product._id}
-                onClick={() => openProductModal(product)}
-              >
-                {getImageSrc(product) ? (
-                  <img
-                    src={getImageSrc(product)}
-                    alt={product.name}
-                    onError={(e) => handleImageError(e, product.name)}
-                  />
-                ) : (
-                  <div className="no-image-placeholder">
-                    <span>Sin imagen</span>
-                  </div>
-                )}
-                
-                <div className="product-info">
-                  <h3>{product.name}</h3>
-                  <p className="product-price">${product.price}</p>
-                  <p className="product-stock">Stock: {product.stock}</p>
-                  
-                  {/* Mostrar valoración si existe */}
-                  {rating.count > 0 && (
-                    <div className="product-rating">
-                      <span className="rating-stars">{getStarDisplay(rating.average)}</span>
-                      <span className="rating-info">
-                        {rating.average}/5 ({rating.count} valoración{rating.count !== 1 ? 'es' : ''})
-                      </span>
-                    </div>
-                  )}
-                  
-                  <button
-                    className="buy-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openProductModal(product);
-                    }}
-                  >
-                    Ver Detalles
-                  </button>
+          filteredProducts.map((product) => (
+            <div
+              className="product-card"
+              key={product._id}
+              onClick={() => openProductModal(product)}
+            >
+              {/* Badge de stock */}
+              {product.stock <= 5 && product.stock > 0 && (
+                <div className="low-stock-badge">Poco Stock</div>
+              )}
+              {product.stock === 0 && (
+                <div className="no-stock-badge">Agotado</div>
+              )}
+
+              {getImageSrc(product) ? (
+                <img
+                  src={getImageSrc(product)}
+                  alt={product.name}
+                  onError={(e) => handleImageError(e, product.name)}
+                />
+              ) : (
+                <div className="no-image-placeholder">
+                  <span>Sin imagen</span>
                 </div>
+              )}
+              
+              <div className="product-info">
+                <h3>{product.name}</h3>
+                <p className="product-price">${product.price}</p>
+                <p className={`product-stock ${product.stock <= 5 ? 'low-stock' : ''} ${product.stock === 0 ? 'no-stock' : ''}`}>
+                  Stock: {product.stock}
+                </p>
+                
+                <button
+                  className="buy-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openProductModal(product);
+                  }}
+                  disabled={product.stock === 0}
+                >
+                  {product.stock === 0 ? 'Sin Stock' : 'Ver Detalles'}
+                </button>
               </div>
-            );
-          })
+            </div>
+          ))
         ) : (
           <div className="no-products">
             <p>No se encontraron productos.</p>
@@ -301,6 +332,7 @@ function Products() {
 
       <ToastContainer position="top-right" autoClose={2500} />
 
+      {/* Modal del producto - Solo se muestra si hay un producto seleccionado */}
       {isModalOpen && selectedProduct && (
         <div className="product-modal-overlay" onClick={closeModal}>
           <div className="product-modal" onClick={(e) => e.stopPropagation()}>
@@ -310,17 +342,25 @@ function Products() {
             <div className="modal-tabs">
               <button 
                 className={`modal-tab ${!showRatings ? 'active' : ''}`}
-                onClick={() => setShowRatings(false)}
+                onClick={switchToDetailsTab}
               >
                 <span className="tab-icon">📋</span>
-                Detalles
+                Detalles del Producto
               </button>
               <button 
                 className={`modal-tab ${showRatings ? 'active' : ''}`}
-                onClick={() => setShowRatings(true)}
+                onClick={switchToRatingsTab}
               >
                 <span className="tab-icon">⭐</span>
                 Valoraciones
+                {(() => {
+                  const rating = getProductRating(selectedProduct._id);
+                  return rating.count > 0 ? (
+                    <span className="ratings-count">({rating.count})</span>
+                  ) : (
+                    <span className="no-ratings-indicator">(0)</span>
+                  );
+                })()}
               </button>
             </div>
 
@@ -346,22 +386,23 @@ function Products() {
                     <h2>{selectedProduct.name}</h2>
                     <p className="product-description">{selectedProduct.description}</p>
 
-                    {/* Valoración rápida */}
                     {(() => {
                       const rating = getProductRating(selectedProduct._id);
                       return rating.count > 0 ? (
                         <div className="product-rating-summary">
                           <div className="rating-display">
-                            <span className="rating-stars">{getStarDisplay(rating.average)}</span>
+                            <span className="rating-stars">
+                              {'★'.repeat(Math.floor(rating.average))}{'☆'.repeat(5 - Math.floor(rating.average))}
+                            </span>
                             <span className="rating-text">
                               {rating.average}/5 ({rating.count} valoración{rating.count !== 1 ? 'es' : ''})
                             </span>
                           </div>
                           <button 
                             className="view-ratings-btn"
-                            onClick={() => setShowRatings(true)}
+                            onClick={switchToRatingsTab}
                           >
-                            Ver todas las valoraciones
+                            Ver todas las valoraciones →
                           </button>
                         </div>
                       ) : (
@@ -369,9 +410,9 @@ function Products() {
                           <span className="no-rating-text">Sin valoraciones aún</span>
                           <button 
                             className="view-ratings-btn"
-                            onClick={() => setShowRatings(true)}
+                            onClick={switchToRatingsTab}
                           >
-                            Ver valoraciones
+                            Ver valoraciones →
                           </button>
                         </div>
                       );
@@ -407,12 +448,44 @@ function Products() {
                   </div>
                 </>
               ) : (
-                // Contenido de valoraciones
+                // Contenido de valoraciones - Solo se muestra cuando se selecciona la pestaña
                 <div className="ratings-section">
-                  <h2>Valoraciones de {selectedProduct.name}</h2>
+                  <div className="ratings-header">
+                    <h2>Valoraciones de {selectedProduct.name}</h2>
+                    <button 
+                      className="back-to-details-btn"
+                      onClick={switchToDetailsTab}
+                    >
+                      ← Volver a detalles
+                    </button>
+                  </div>
+                  
+                  {/* Mostrar mensaje si no está logueado */}
+                  {!isLoggedIn && (
+                    <div className="login-required-notice">
+                      <div className="notice-content">
+                        <span className="notice-icon">🔒</span>
+                        <div className="notice-text">
+                          <h4>Inicia sesión para valorar productos</h4>
+                          <p>Puedes ver las valoraciones de otros usuarios, pero necesitas una cuenta para agregar tu propia valoración.</p>
+                        </div>
+                        <button 
+                          className="login-btn"
+                          onClick={() => {
+                            handleLoginRequired();
+                            
+                          }}
+                        >
+                          Iniciar Sesión
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
                   <ProductRatingsDisplay 
                     productId={selectedProduct._id} 
                     showInModal={true}
+                    isLoggedIn={isLoggedIn}
                   />
                 </div>
               )}

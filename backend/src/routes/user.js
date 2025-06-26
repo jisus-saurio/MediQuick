@@ -7,14 +7,14 @@ import userController from "../controllers/userController.js";
 // Define routes for users
 router
   .route("/")
-  .get(userController.getUser)
-  .post(userController.createUsers);
+  .get(userController.getUsers)  // GET todos los usuarios
+  .post(userController.createUsers); // POST crear usuario
 
 // Define routes for a specific user by ID
 router
   .route("/:id")
-  .get(userController.getUsers)
-  .put(userController.updateUsers)
-  .delete(userController.deleteUsers);
+  .get(userController.getUser)    // GET usuario específico por ID
+  .put(userController.updateUsers) // PUT actualizar usuario
+  .delete(userController.deleteUsers); // DELETE eliminar usuario
 
-export default router
+export default router;

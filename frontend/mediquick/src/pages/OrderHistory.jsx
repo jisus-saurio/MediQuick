@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../style/OrderHistory.css';
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import ProductRating from '../components/ProductRatingsDisplay';
+import ProductRating from '../components/ProductRating';
 
 function OrderHistory() {
   const [orders, setOrders] = useState([]);
@@ -12,27 +12,65 @@ function OrderHistory() {
   const [filter, setFilter] = useState('all');
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedProductForRating, setSelectedProductForRating] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    loadOrdersFromLocalStorage();
-
+    checkLoginStatus();
+    
     // Escuchar cuando se agreguen nuevas órdenes
     const handleOrdersUpdated = () => {
-      loadOrdersFromLocalStorage();
+      if (isLoggedIn && currentUser) {
+        loadOrdersFromLocalStorage();
+      }
+    };
+
+    const handleLoginChange = () => {
+      checkLoginStatus();
     };
 
     window.addEventListener('ordersUpdated', handleOrdersUpdated);
+    window.addEventListener('loginStateChanged', handleLoginChange);
 
     // Iniciar el sistema de progresión automática de estados
     const progressionInterval = startOrderStatusProgression();
 
     return () => {
       window.removeEventListener('ordersUpdated', handleOrdersUpdated);
+      window.removeEventListener('loginStateChanged', handleLoginChange);
       if (progressionInterval) {
         clearInterval(progressionInterval);
       }
     };
   }, []);
+
+  // Cargar órdenes cuando cambie el estado de login o el usuario
+  useEffect(() => {
+    if (isLoggedIn && currentUser) {
+      loadOrdersFromLocalStorage();
+    } else {
+      setOrders([]);
+      setLoading(false);
+    }
+  }, [isLoggedIn, currentUser]);
+
+  const checkLoginStatus = () => {
+    const userSession = localStorage.getItem('userSession');
+    if (userSession) {
+      try {
+        const sessionData = JSON.parse(userSession);
+        setIsLoggedIn(true);
+        setCurrentUser(sessionData);
+      } catch (error) {
+        console.error('Error parsing session data:', error);
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+      }
+    } else {
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+    }
+  };
 
   // Sistema de progresión automática de estados
   const startOrderStatusProgression = () => {
@@ -112,8 +150,39 @@ function OrderHistory() {
   const loadOrdersFromLocalStorage = () => {
     try {
       setLoading(true);
-      // Primero limpiar órdenes canceladas vencidas
-      const cleanedOrders = cleanupCancelledOrders();
+      
+      if (!isLoggedIn || !currentUser) {
+        console.log('Usuario no logueado en OrderHistory'); // Debug
+        setOrders([]);
+        return;
+      }
+
+      console.log('Cargando órdenes para usuario en OrderHistory:', currentUser); // Debug
+
+      // Cargar solo órdenes del usuario actual
+      const allOrders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+      console.log('Total de órdenes en storage:', allOrders.length); // Debug
+      
+      const userOrders = allOrders.filter(order => {
+        const matchesUserId = order.userId === currentUser.userId;
+        const matchesEmail = order.customerInfo && order.customerInfo.email === currentUser.email;
+        const matchesUserEmail = order.userEmail === currentUser.email;
+        
+        console.log(`Orden ${order._id}:`, { // Debug
+          userId: order.userId,
+          currentUserId: currentUser.userId,
+          matchesUserId,
+          matchesEmail,
+          matchesUserEmail
+        });
+        
+        return matchesUserId || matchesEmail || matchesUserEmail;
+      });
+      
+      console.log('Órdenes filtradas para el usuario:', userOrders.length); // Debug
+      
+      // Limpiar órdenes canceladas vencidas solo del usuario actual
+      const cleanedOrders = cleanupCancelledOrders(userOrders);
       setOrders(cleanedOrders);
     } catch (error) {
       console.error('Error cargando órdenes:', error);
@@ -372,7 +441,7 @@ function OrderHistory() {
     }
   };
 
-  const cleanupCancelledOrders = () => {
+  const cleanupCancelledOrders = (userOrders) => {
     try {
       const storedOrders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
       const now = new Date();
@@ -402,10 +471,18 @@ function OrderHistory() {
         }
       }
       
-      return validOrders;
+      // Retornar solo las órdenes del usuario actual después de la limpieza
+      if (isLoggedIn && currentUser) {
+        return validOrders.filter(order => 
+          order.userId === currentUser.userId || 
+          (order.customerInfo && order.customerInfo.email === currentUser.email)
+        );
+      }
+      
+      return [];
     } catch (error) {
       console.error('Error limpiando órdenes canceladas:', error);
-      return JSON.parse(localStorage.getItem('orderHistory') || '[]');
+      return userOrders || [];
     }
   };
 
@@ -461,7 +538,21 @@ function OrderHistory() {
         </div>
       </div>
 
-      {filteredOrders.length === 0 ? (
+      {!isLoggedIn ? (
+        <div className="empty-orders">
+          <div className="empty-icon">🔐</div>
+          <h2>Inicia sesión para ver tus órdenes</h2>
+          <p>
+            Necesitas iniciar sesión para acceder a tu historial de compras personal.
+          </p>
+          <button 
+            className="start-shopping-btn"
+            onClick={() => window.location.href = '/login'}
+          >
+            Iniciar Sesión
+          </button>
+        </div>
+      ) : filteredOrders.length === 0 ? (
         <div className="empty-orders">
           <div className="empty-icon">📦</div>
           <h2>No hay órdenes</h2>
