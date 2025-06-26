@@ -26,6 +26,7 @@ loginController.login = async (req, res) => {
         let userFound;
         let userType;
         let redirectTo;
+        let userId;
 
         console.log("🔍 Buscando usuario:", email);
 
@@ -33,22 +34,25 @@ loginController.login = async (req, res) => {
         if (email === config.adminf.ADMIN_EMAIL && password === config.adminf.ADMIN_PASSWORD) {
             console.log("✅ Login como ADMIN");
             userType = "Admin";
-            userFound = { _id: "Admin", email: email };
+            userId = "admin";
+            userFound = { _id: "admin", email: email };
             redirectTo = "/HomeAdmind";
         } else {
             // Buscar empleado
             userFound = await employeesModel.findOne({ email });
             if (userFound) {
                 userType = "Employee";
+                userId = userFound._id.toString();
                 redirectTo = "/HomeAdmind";
-                console.log("✅ Usuario encontrado como EMPLEADO");
+                console.log("✅ Usuario encontrado como EMPLEADO, ID:", userId);
             } else {
                 // Buscar cliente
                 userFound = await clientModel.findOne({ email });
                 if (userFound) {
                     userType = "User";
+                    userId = userFound._id.toString();
                     redirectTo = "/";
-                    console.log("✅ Usuario encontrado como CLIENTE");
+                    console.log("✅ Usuario encontrado como CLIENTE, ID:", userId);
                 }
             }
         }
@@ -64,10 +68,10 @@ loginController.login = async (req, res) => {
         // Validar contraseña si no es Admin
         if (userType !== "Admin") {
             console.log("🔒 Validando contraseña...");
-            console.log("Contraseña en BD:", userFound.password);
+            console.log("Contraseña en BD:", userFound.password ? "***" : "NO DEFINIDA");
             
             // Verificar si la contraseña está hasheada o es texto plano
-            const isHashed = userFound.password.startsWith('$2');
+            const isHashed = userFound.password && userFound.password.startsWith('$2');
             console.log("¿Contraseña está hasheada?", isHashed ? "SÍ" : "NO - TEXTO PLANO");
             
             let isMatch = false;
@@ -109,7 +113,7 @@ loginController.login = async (req, res) => {
         // Generar token
         sign(
             { 
-                id: userFound._id, 
+                id: userId, 
                 userType,
                 email: userFound.email || email 
             },
@@ -135,6 +139,7 @@ loginController.login = async (req, res) => {
                 });
 
                 console.log("🚀 Login exitoso, redirigiendo a:", redirectTo);
+                console.log("👤 ID de usuario:", userId);
                 console.log("=== FIN LOGIN ===");
 
                 return res.json({
@@ -143,9 +148,13 @@ loginController.login = async (req, res) => {
                     userType,
                     redirectTo,
                     user: {
-                        id: userFound._id,
+                        id: userId,
                         email: userFound.email || email,
-                        userType
+                        userType,
+                        // Incluir datos adicionales si están disponibles
+                        name: userFound.name || email.split('@')[0],
+                        phone: userFound.phone || 'No especificado',
+                        address: userFound.address || 'No especificado'
                     }
                 });
             }

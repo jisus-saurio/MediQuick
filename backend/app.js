@@ -50,7 +50,7 @@ app.use("/api/categories", categoriesRoutes);
 // ===== RUTAS PROTEGIDAS POR AUTENTICACIÓN =====
 
 // Rutas solo para administradores
-app.use("/api/users", validateAuthToken(["Admin"]), userRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/employees", validateAuthToken(["Admin"]), employeesRoutes);
 app.use("/api/discounts", validateAuthToken(["Admin"]), discountsRoutes);
 app.use("/api/suppliers", validateAuthToken(["Admin"]), suppliersRoutes);

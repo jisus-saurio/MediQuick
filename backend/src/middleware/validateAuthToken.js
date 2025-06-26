@@ -1,14 +1,18 @@
 import jsonwebtoken from 'jsonwebtoken';
-import {config} from '../config.js';
+import { config } from '../config.js';
 
+// Middleware que REQUIERE autenticación
 export const validateAuthToken = (allowedUserTypes = []) => {
     return (req, res, next) => {
         try {
+            console.log('🔒 Validando token requerido...');
+            
             // Extraer el token de la cookie
             const { authToken } = req.cookies;
 
-            // Imprimir un mensaje de error si no hay cookie
+            // Error si no hay cookie
             if (!authToken) {
+                console.log('❌ No hay token en cookies');
                 return res.status(401).json({ 
                     message: 'No se encontró token de autenticación, por favor inicie sesión.',
                     success: false,
@@ -16,11 +20,13 @@ export const validateAuthToken = (allowedUserTypes = []) => {
                 });
             }
 
-            // Extraer la información del token
+            // Verificar el token
             const decoded = jsonwebtoken.verify(authToken, config.JWT.SECRET);
+            console.log('✅ Token válido:', decoded.userType);
 
-            // Verificar si quien inició sesión es un usuario permitido
+            // Verificar permisos si se especificaron
             if (allowedUserTypes.length > 0 && !allowedUserTypes.includes(decoded.userType)) {
+                console.log('❌ Permisos insuficientes');
                 return res.status(403).json({ 
                     message: 'No tienes autorización para acceder a este recurso.',
                     success: false,
@@ -35,10 +41,11 @@ export const validateAuthToken = (allowedUserTypes = []) => {
                 email: decoded.email
             };
 
+            console.log('✅ Usuario autenticado:', req.user);
             next();
 
         } catch (error) {
-            console.log("Error en validación de token:", error);
+            console.log("❌ Error en validación de token:", error.message);
             
             if (error.name === 'TokenExpiredError') {
                 return res.status(401).json({ 
@@ -63,24 +70,36 @@ export const validateAuthToken = (allowedUserTypes = []) => {
     }
 }
 
+// Middleware que NO requiere autenticación (opcional)
 export const optionalAuth = (req, res, next) => {
     try {
+        console.log('🔓 Verificando autenticación opcional...');
+        
         const { authToken } = req.cookies;
         
         if (authToken) {
-            const decoded = jsonwebtoken.verify(authToken, config.JWT.SECRET);
-            req.user = {
-                id: decoded.id,
-                userType: decoded.userType,
-                email: decoded.email
-            };
+            try {
+                const decoded = jsonwebtoken.verify(authToken, config.JWT.SECRET);
+                req.user = {
+                    id: decoded.id,
+                    userType: decoded.userType,
+                    email: decoded.email
+                };
+                console.log('✅ Usuario encontrado (opcional):', req.user.userType);
+            } catch (error) {
+                console.log('⚠️ Token inválido o expirado, continuando sin autenticación');
+                req.user = null;
+            }
+        } else {
+            console.log('ℹ️ No hay token, continuando sin autenticación');
+            req.user = null;
         }
-        // Si no hay token, simplemente continúa sin req.user
+        
         next();
         
     } catch (error) {
-        // Si hay error en el token, continúa sin autenticación
-        console.log("Token inválido o expirado, continuando sin autenticación");
+        console.log("⚠️ Error en autenticación opcional, continuando sin autenticación:", error.message);
+        req.user = null;
         next();
     }
 }

@@ -45,70 +45,29 @@ const LoginForm = () => {
       console.log('Resultado del login:', result);
       
       if (result && result.success) {
-        // Tu AuthContext devuelve: { success, message, userType, redirectTo }
-        // No devuelve un objeto user, así que lo creamos aquí
+        console.log('Usuario del backend:', result.user);
         
-        const userData = {
-          email: email,
-          userType: result.userType
-        };
-        
-        // Guardar información de sesión
+        // El backend ahora devuelve todos los datos del usuario
         const sessionData = {
-          userId: `user_${Date.now()}`, // Generar ID temporal hasta obtener el real
-          email: email,
-          userType: result.userType,
+          userId: result.user.id,
+          email: result.user.email,
+          userType: result.user.userType,
           loginTime: new Date().toISOString()
         };
         
         console.log('Guardando sessionData:', sessionData);
         localStorage.setItem('userSession', JSON.stringify(sessionData));
         
-        // Crear perfil básico
-        const basicProfile = {
-          name: email.split('@')[0], // Usar la parte antes del @ como nombre temporal
-          email: email,
-          phone: 'No especificado',
-          address: 'No especificado'
+        // Guardar perfil con datos del backend
+        const userProfile = {
+          name: result.user.name,
+          email: result.user.email,
+          phone: result.user.phone,
+          address: result.user.address,
+          password: '********'
         };
         
-        // Intentar obtener el ID real del usuario desde el backend
-        if (result.userType === 'User') {
-          try {
-            // Buscar el usuario por email para obtener su ID real
-            const usersResponse = await fetch('/api/users');
-            if (usersResponse.ok) {
-              const users = await usersResponse.json();
-              const currentUser = users.find(user => user.email === email);
-              
-              if (currentUser) {
-                // Actualizar sessionData con el ID real
-                sessionData.userId = currentUser._id;
-                localStorage.setItem('userSession', JSON.stringify(sessionData));
-                
-                // Actualizar perfil con datos reales
-                const realProfile = {
-                  name: currentUser.name,
-                  email: currentUser.email,
-                  phone: currentUser.phone,
-                  address: currentUser.address
-                };
-                localStorage.setItem('userProfile', JSON.stringify(realProfile));
-              } else {
-                // Si no se encuentra, usar perfil básico
-                localStorage.setItem('userProfile', JSON.stringify(basicProfile));
-              }
-            } else {
-              localStorage.setItem('userProfile', JSON.stringify(basicProfile));
-            }
-          } catch (error) {
-            console.warn('Error obteniendo datos del usuario:', error);
-            localStorage.setItem('userProfile', JSON.stringify(basicProfile));
-          }
-        } else {
-          // Para admins o empleados, usar perfil básico
-          localStorage.setItem('userProfile', JSON.stringify(basicProfile));
-        }
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
         
         // Disparar evento para actualizar navegación
         window.dispatchEvent(new CustomEvent('loginStateChanged'));
@@ -164,7 +123,7 @@ const LoginForm = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Registro exitoso. Ahora puede iniciar sesión.");
+        toast.success("Registro exitoso. Ahora puedes iniciar sesión.");
         setIsLogin(true);
         setFormData({
           email: formData.email, 

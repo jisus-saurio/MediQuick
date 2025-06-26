@@ -1,7 +1,7 @@
 /* Estilos para el historial de órdenes - Coherente con el diseño del proyecto */
 .order-history-container {
   padding: 20px;
-  max-width: 1200px;
+  max-width: 2200px;
   margin: 0 auto;
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   min-height: 100vh;
