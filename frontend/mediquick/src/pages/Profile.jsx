@@ -359,23 +359,7 @@ function Profile() {
           <p>Gestiona tu información personal y revisa tu historial de compras</p>
         </div>
         <div className="profile-actions">
-          {isLoggedIn ? (
-            <button 
-              className="logout-btn"
-              onClick={handleLogout}
-              title="Cerrar sesión"
-            >
-              🚪 Cerrar Sesión
-            </button>
-          ) : (
-            <button 
-              className="login-btn"
-              onClick={goToLogin}
-              title="Iniciar sesión"
-            >
-              🔑 Iniciar Sesión
-            </button>
-          )}
+        
         </div>
       </div>
 
