@@ -1,3 +1,5 @@
+/* ProductRating.css */
+
 .rating-modal-overlay {
   position: fixed;
   top: 0;
@@ -298,8 +300,35 @@
   }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
+  .ratings-view-content {
+    padding: 20px;
+  }
+  
+  .ratings-summary-view {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .delivery-stats-view {
+    text-align: center;
+  }
+  
+  .rating-header-view {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .rating-meta-view {
+    align-items: flex-start;
+  }
+  
+  .ratings-list-view {
+    max-height: 300px;
+  }
+  
   .rating-modal {
     width: 95%;
     margin: 20px;
@@ -330,7 +359,19 @@
     flex-direction: column;
   }
   
-  .cancel-btn, .submit-btn {
+  .cancel-btn, .submit-btn, .close-view-btn {
     width: 100%;
+  }
+  
+  .how-to-rate-info {
+    padding: 12px;
+  }
+  
+  .average-stars-view {
+    font-size: 24px;
+  }
+  
+  .average-number-view {
+    font-size: 20px;
   }
 }

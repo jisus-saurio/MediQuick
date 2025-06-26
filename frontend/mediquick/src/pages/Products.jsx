@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import '../style/Products.css';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ProductRatingsDisplay from '../components/ProductRating';
 
 function Products() {
   const [productos, setProductos] = useState([]);
@@ -13,18 +12,43 @@ function Products() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showRatings, setShowRatings] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Verificar estado de login
   useEffect(() => {
     checkLoginStatus();
+    
+    // Verificar periódicamente el estado de autenticación
+    const authCheckInterval = setInterval(() => {
+      checkLoginStatus();
+    }, 30000); // Cada 30 segundos
+
+    return () => {
+      clearInterval(authCheckInterval);
+    };
   }, []);
 
-  const checkLoginStatus = () => {
-    // Verificar si hay un usuario logueado (puedes ajustar esta lógica según tu sistema de auth)
+  const checkLoginStatus = async () => {
+    try {
+      // Intentar verificar autenticación de forma silenciosa
+      const response = await fetch('/api/auth/verify', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      
+      setIsLoggedIn(response.ok);
+    } catch (error) {
+      console.error('Error al verificar estado de autenticación:', error);
+      // Error de red o servidor - asumir no logueado
+      setIsLoggedIn(false);
+    }
+    
+    // También verificar localStorage como fallback
     const user = localStorage.getItem('currentUser') || localStorage.getItem('userToken');
-    setIsLoggedIn(!!user);
+    if (user && !isLoggedIn) {
+      setIsLoggedIn(true);
+    }
   };
 
   // Fetch productos, categorías y proveedores cuando el componente monta
@@ -59,14 +83,17 @@ function Products() {
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      await Promise.all([
-        fetchProductos(),
+      // Cargar productos (crítico)
+      await fetchProductos();
+      
+      // Cargar categorías y proveedores (opcionales)
+      await Promise.allSettled([
         fetchCategorias(),
         fetchProveedores()
       ]);
     } catch (error) {
       console.error('Error al cargar datos iniciales:', error);
-      setError('Error al cargar los datos');
+      setError('Error al cargar los productos');
     } finally {
       setLoading(false);
     }
@@ -123,8 +150,14 @@ function Products() {
         headers: { 'Content-Type': 'application/json' },
       });
 
+      if (res.status === 401 || res.status === 403) {
+        // Usuario no autenticado - usar fallback silencioso
+        setProveedores([]);
+        return;
+      }
+
       if (!res.ok) {
-        console.warn(`API proveedores respondió con status ${res.status}`);
+        console.warn(`API proveedores respondió con status ${res.status} - usando fallback`);
         setProveedores([]);
         return;
       }
@@ -133,6 +166,7 @@ function Products() {
       setProveedores(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error al obtener proveedores:', error);
+      // Error de red o conexión - usar fallback silencioso
       setProveedores([]);
     }
   };
@@ -156,13 +190,16 @@ function Products() {
   };
 
   const getNombreCategoria = (id) => {
+    if (!id) return 'Sin categoría';
     const cat = categorias.find((c) => c._id === id);
     return cat ? cat.name : 'Sin categoría';
   };
 
   const getNombreProveedor = (id) => {
+    if (!id) return 'Información no disponible';
+    if (proveedores.length === 0) return 'Cargando...';
     const prov = proveedores.find((p) => p._id === id);
-    return prov ? prov.name : 'Sin proveedor';
+    return prov ? prov.name : 'Proveedor no encontrado';
   };
 
   // Filtrar productos según búsqueda
@@ -179,21 +216,11 @@ function Products() {
   const openProductModal = (product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
-    setShowRatings(false); // Siempre iniciar en la pestaña de detalles
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedProduct(null);
-    setShowRatings(false);
-  };
-
-  const switchToRatingsTab = () => {
-    setShowRatings(true);
-  };
-
-  const switchToDetailsTab = () => {
-    setShowRatings(false);
   };
 
   const addToCart = (product) => {
@@ -236,13 +263,6 @@ function Products() {
     e.target.onerror = null;
   };
 
-  const handleLoginRequired = () => {
-    toast.warning('Debes iniciar sesión para valorar productos', {
-      autoClose: 3000,
-      style: { backgroundColor: '#ffc107', color: '#333' }
-    });
-  };
-
   if (loading) {
     return (
       <div className="products-page">
@@ -266,6 +286,14 @@ function Products() {
 
   return (
     <div className="products-page">
+      {/* Indicador de estado de conexión */}
+      {!isLoggedIn && (
+        <div className="connection-status">
+          <span className="status-indicator offline"></span>
+          <span className="status-text">Modo sin conexión</span>
+        </div>
+      )}
+
       <div className="search-bar">
         <input
           type="text"
@@ -310,6 +338,21 @@ function Products() {
                   Stock: {product.stock}
                 </p>
                 
+                {/* Mostrar estrellas de valoración si existe */}
+                {(() => {
+                  const rating = getProductRating(product._id);
+                  return rating.count > 0 ? (
+                    <div className="product-rating-stars">
+                      <span className="stars">
+                        {'★'.repeat(Math.floor(rating.average))}{'☆'.repeat(5 - Math.floor(rating.average))}
+                      </span>
+                      <span className="rating-count">
+                        ({rating.count})
+                      </span>
+                    </div>
+                  ) : null;
+                })()}
+                
                 <button
                   className="buy-btn"
                   onClick={(e) => {
@@ -332,163 +375,103 @@ function Products() {
 
       <ToastContainer position="top-right" autoClose={2500} />
 
-      {/* Modal del producto - Solo se muestra si hay un producto seleccionado */}
+      {/* Modal del producto centrado */}
       {isModalOpen && selectedProduct && (
         <div className="product-modal-overlay" onClick={closeModal}>
           <div className="product-modal" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={closeModal}>×</button>
 
-            {/* Pestañas del modal */}
-            <div className="modal-tabs">
-              <button 
-                className={`modal-tab ${!showRatings ? 'active' : ''}`}
-                onClick={switchToDetailsTab}
-              >
-                <span className="tab-icon">📋</span>
-                Detalles del Producto
-              </button>
-              <button 
-                className={`modal-tab ${showRatings ? 'active' : ''}`}
-                onClick={switchToRatingsTab}
-              >
-                <span className="tab-icon">⭐</span>
-                Valoraciones
+            <div className="modal-content">
+              <div className="product-image-section">
+                {getImageSrc(selectedProduct) ? (
+                  <img
+                    src={getImageSrc(selectedProduct)}
+                    alt={selectedProduct.name}
+                    onError={(e) => handleImageError(e, selectedProduct.name)}
+                  />
+                ) : (
+                  <div className="no-image-placeholder">
+                    <span>Sin imagen disponible</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="product-info-section">
+                <h2>{selectedProduct.name}</h2>
+                <p className="product-description">{selectedProduct.description}</p>
+
+                {/* Sistema de valoraciones estilo Google Play */}
                 {(() => {
                   const rating = getProductRating(selectedProduct._id);
                   return rating.count > 0 ? (
-                    <span className="ratings-count">({rating.count})</span>
+                    <div className="google-play-rating">
+                      <div className="rating-overview">
+                        <div className="rating-score">
+                          <span className="score-number">{rating.average.toFixed(1)}</span>
+                          <div className="score-stars">
+                            {'★'.repeat(Math.floor(rating.average))}{'☆'.repeat(5 - Math.floor(rating.average))}
+                          </div>
+                          <span className="review-count">{rating.count} valoración{rating.count !== 1 ? 'es' : ''}</span>
+                        </div>
+                        <div className="rating-bars">
+                          {[5, 4, 3, 2, 1].map(star => {
+                            const starRatings = JSON.parse(localStorage.getItem('productRatings') || '[]')
+                              .filter(r => r.productId === selectedProduct._id);
+                            const count = starRatings.filter(r => r.stars === star).length;
+                            const percentage = rating.count > 0 ? (count / rating.count) * 100 : 0;
+                            
+                            return (
+                              <div key={star} className="rating-bar-item">
+                                <span className="star-number">{star}</span>
+                                <div className="bar-container">
+                                  <div 
+                                    className="bar-fill"
+                                    style={{ width: `${percentage}%` }}
+                                  ></div>
+                                </div>
+                                <span className="bar-count">({count})</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
                   ) : (
-                    <span className="no-ratings-indicator">(0)</span>
+                    <div className="no-rating-google">
+                      <span className="no-rating-text">Sin valoraciones</span>
+                      <div className="empty-stars">☆☆☆☆☆</div>
+                    </div>
                   );
                 })()}
-              </button>
-            </div>
 
-            <div className="modal-content">
-              {!showRatings ? (
-                // Contenido de detalles del producto
-                <>
-                  <div className="product-image-section">
-                    {getImageSrc(selectedProduct) ? (
-                      <img
-                        src={getImageSrc(selectedProduct)}
-                        alt={selectedProduct.name}
-                        onError={(e) => handleImageError(e, selectedProduct.name)}
-                      />
-                    ) : (
-                      <div className="no-image-placeholder">
-                        <span>Sin imagen disponible</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="product-info-section">
-                    <h2>{selectedProduct.name}</h2>
-                    <p className="product-description">{selectedProduct.description}</p>
-
-                    {(() => {
-                      const rating = getProductRating(selectedProduct._id);
-                      return rating.count > 0 ? (
-                        <div className="product-rating-summary">
-                          <div className="rating-display">
-                            <span className="rating-stars">
-                              {'★'.repeat(Math.floor(rating.average))}{'☆'.repeat(5 - Math.floor(rating.average))}
-                            </span>
-                            <span className="rating-text">
-                              {rating.average}/5 ({rating.count} valoración{rating.count !== 1 ? 'es' : ''})
-                            </span>
-                          </div>
-                          <button 
-                            className="view-ratings-btn"
-                            onClick={switchToRatingsTab}
-                          >
-                            Ver todas las valoraciones →
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="no-rating-summary">
-                          <span className="no-rating-text">Sin valoraciones aún</span>
-                          <button 
-                            className="view-ratings-btn"
-                            onClick={switchToRatingsTab}
-                          >
-                            Ver valoraciones →
-                          </button>
-                        </div>
-                      );
-                    })()}
-
-                    <div className="product-details">
-                      <p>
-                        <strong>Precio:</strong> ${selectedProduct.price}
-                      </p>
-                      <p>
-                        <strong>Stock disponible:</strong> {selectedProduct.stock} unidades
-                      </p>
-                      <p>
-                        <strong>Categoría:</strong> {getNombreCategoria(selectedProduct.categoryId)}
-                      </p>
-                      <p>
-                        <strong>Proveedor:</strong> {getNombreProveedor(selectedProduct.supplierId)}
-                      </p>
-                    </div>
-
-                    <div className="modal-actions">
-                      <button
-                        className="add-to-cart-btn"
-                        onClick={() => addToCart(selectedProduct)}
-                        disabled={selectedProduct.stock <= 0}
-                      >
-                        {selectedProduct.stock <= 0 ? 'Sin Stock' : 'Agregar al Carrito'}
-                      </button>
-                      <button className="cancel-btn" onClick={closeModal}>
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                // Contenido de valoraciones - Solo se muestra cuando se selecciona la pestaña
-                <div className="ratings-section">
-                  <div className="ratings-header">
-                    <h2>Valoraciones de {selectedProduct.name}</h2>
-                    <button 
-                      className="back-to-details-btn"
-                      onClick={switchToDetailsTab}
-                    >
-                      ← Volver a detalles
-                    </button>
-                  </div>
-                  
-                  {/* Mostrar mensaje si no está logueado */}
-                  {!isLoggedIn && (
-                    <div className="login-required-notice">
-                      <div className="notice-content">
-                        <span className="notice-icon">🔒</span>
-                        <div className="notice-text">
-                          <h4>Inicia sesión para valorar productos</h4>
-                          <p>Puedes ver las valoraciones de otros usuarios, pero necesitas una cuenta para agregar tu propia valoración.</p>
-                        </div>
-                        <button 
-                          className="login-btn"
-                          onClick={() => {
-                            handleLoginRequired();
-                            
-                          }}
-                        >
-                          Iniciar Sesión
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <ProductRatingsDisplay 
-                    productId={selectedProduct._id} 
-                    showInModal={true}
-                    isLoggedIn={isLoggedIn}
-                  />
+                <div className="product-details">
+                  <p>
+                    <strong>Precio:</strong> ${selectedProduct.price}
+                  </p>
+                  <p>
+                    <strong>Stock disponible:</strong> {selectedProduct.stock} unidades
+                  </p>
+                  <p>
+                    <strong>Categoría:</strong> {getNombreCategoria(selectedProduct.categoryId)}
+                  </p>
+                  <p>
+                    <strong>Proveedor:</strong> {getNombreProveedor(selectedProduct.supplierId)}
+                  </p>
                 </div>
-              )}
+
+                <div className="modal-actions">
+                  <button
+                    className="add-to-cart-btn"
+                    onClick={() => addToCart(selectedProduct)}
+                    disabled={selectedProduct.stock <= 0}
+                  >
+                    {selectedProduct.stock <= 0 ? 'Sin Stock' : 'Agregar al Carrito'}
+                  </button>
+                  <button className="cancel-btn" onClick={closeModal}>
+                    Cancelar
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
