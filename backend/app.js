@@ -21,6 +21,9 @@ import logoutRoutes from "./src/routes/logout.js";
 // Importar nueva ruta de verificación
 import verificationRoutes from "./src/routes/verification.js";
 
+// Importar rutas de recuperación de contraseña
+import passwordRecoveryRoutes from "./src/routes/passwordRecovery.js";
+
 import { validateAuthToken } from "./src/middleware/validateAuthToken.js";
 
 // Crear una instancia de Express
@@ -47,6 +50,9 @@ app.use("/api/logout", logoutRoutes);
 
 // Nueva ruta de verificación (PÚBLICA)
 app.use("/api/verification", verificationRoutes);
+
+// Rutas de recuperación de contraseña (PÚBLICA)
+app.use("/api/password-recovery", passwordRecoveryRoutes);
 
 // Rutas de productos - AHORA PÚBLICAS para visualización (se maneja internamente)
 app.use("/api/products", productsRoutes);

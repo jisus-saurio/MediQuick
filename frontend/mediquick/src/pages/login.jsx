@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import VerificationModal from "../components/VerificationModal";
+import PasswordRecoveryModal from "../components/PasswordRecoveryModal";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const LoginForm = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showPasswordRecoveryModal, setShowPasswordRecoveryModal] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [formData, setFormData] = useState({
     email: "",
@@ -215,6 +217,21 @@ const LoginForm = () => {
     }
   };
 
+  // FUNCIONES PARA EL MODAL DE RECUPERACIÓN DE CONTRASEÑA
+  const handlePasswordRecoveryClick = (e) => {
+    e.preventDefault();
+    setShowPasswordRecoveryModal(true);
+  };
+
+  const handleClosePasswordRecoveryModal = () => {
+    setShowPasswordRecoveryModal(false);
+  };
+
+  const handlePasswordRecoverySuccess = () => {
+    toast.success("🎉 Contraseña actualizada. Ya puedes iniciar sesión con tu nueva contraseña.");
+    setShowPasswordRecoveryModal(false);
+  };
+
   const handleCloseVerificationModal = () => {
     setShowVerificationModal(false);
     setVerificationEmail('');
@@ -230,6 +247,7 @@ const LoginForm = () => {
     if (!isLoading) {
       setIsLogin(true);
       setShowVerificationModal(false);
+      setShowPasswordRecoveryModal(false);
       setVerificationEmail('');
     }
   };
@@ -238,6 +256,7 @@ const LoginForm = () => {
     if (!isLoading) {
       setIsLogin(false);
       setShowVerificationModal(false);
+      setShowPasswordRecoveryModal(false);
       setVerificationEmail('');
     }
   };
@@ -283,7 +302,7 @@ const LoginForm = () => {
               required
             />
             <div className="forgot">
-              <a href="#" onClick={(e) => e.preventDefault()}>
+              <a href="#" onClick={handlePasswordRecoveryClick}>
                 ¿Olvidaste tu Contraseña?
               </a>
             </div>
@@ -376,12 +395,19 @@ const LoginForm = () => {
         )}
       </div>
 
-      {/* Modal de verificación */}
+      {/* Modal de verificación para registro */}
       <VerificationModal
         isOpen={showVerificationModal}
         onClose={handleCloseVerificationModal}
         email={verificationEmail}
         onVerificationSuccess={handleVerificationSuccess}
+      />
+
+      {/* Modal de recuperación de contraseña */}
+      <PasswordRecoveryModal
+        isOpen={showPasswordRecoveryModal}
+        onClose={handleClosePasswordRecoveryModal}
+        onSuccess={handlePasswordRecoverySuccess}
       />
 
       <ToastContainer 
