@@ -117,21 +117,7 @@ function Home() {
 
   return (
     <div className="home-container">
-      {/* Hero Section mejorado */}
-      <section className="hero-section">
-        <div className="hero-content">
-          <h1 className="hero-title">
-            Bienvenido a <span className="brand-name">MediQuick</span>
-          </h1>
-          <p className="hero-subtitle">
-            Tu farmacia de confianza. Encuentra todos los medicamentos y productos de salud que necesitas.
-          </p>
-          <button className="cta-button" onClick={navigateToProducts}>
-            Ver Productos
-          </button>
-        </div>
-      </section>
-
+<br /><br />
       {/* Carrusel de banners */}
       <section className="banner">
         <img src={images[currentImage]} alt="Banner promocional" className="banner-image" />

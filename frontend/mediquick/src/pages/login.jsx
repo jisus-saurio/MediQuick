@@ -4,12 +4,15 @@ import "../style/LoginForm.css";
 import { useAuth } from "../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import VerificationModal from "../components/VerificationModal";
 
 const LoginForm = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -47,7 +50,6 @@ const LoginForm = () => {
       if (result && result.success) {
         console.log('Usuario del backend:', result.user);
         
-        // El backend ahora devuelve todos los datos del usuario
         const sessionData = {
           userId: result.user.id,
           email: result.user.email,
@@ -58,7 +60,6 @@ const LoginForm = () => {
         console.log('Guardando sessionData:', sessionData);
         localStorage.setItem('userSession', JSON.stringify(sessionData));
         
-        // Guardar perfil con datos del backend
         const userProfile = {
           name: result.user.name,
           email: result.user.email,
@@ -69,12 +70,10 @@ const LoginForm = () => {
         
         localStorage.setItem('userProfile', JSON.stringify(userProfile));
         
-        // Disparar evento para actualizar navegación
         window.dispatchEvent(new CustomEvent('loginStateChanged'));
         
         toast.success("Inicio de sesión exitoso");
         
-        // Redirigir usando la ruta del AuthContext
         const redirectPath = result.redirectTo || "/";
         setTimeout(() => {
           navigate(redirectPath);
@@ -112,7 +111,8 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/users", {
+      // Enviar código de verificación en lugar de registrar directamente
+      const response = await fetch("/api/verification/send-code", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -122,30 +122,123 @@ const LoginForm = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
-        toast.success("Registro exitoso. Ahora puedes iniciar sesión.");
-        setIsLogin(true);
-        setFormData({
-          email: formData.email, 
-          password: "",
-          name: "",
-          address: "",
-          phone: "",
-        });
+      if (response.ok && data.success) {
+        toast.success("📧 Código de verificación enviado a tu email");
+        setVerificationEmail(email);
+        setShowVerificationModal(true);
       } else {
-        toast.error(data.message || "Error al registrar");
+        if (response.status === 409) {
+          toast.error("Ya existe una cuenta con este email. Intenta iniciar sesión.");
+        } else {
+          toast.error(data.message || "Error al enviar código de verificación");
+        }
       }
     } catch (error) {
-      toast.error("Error de conexión al registrar");
+      toast.error("Error de conexión al enviar código");
       console.error("Error en registro:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleVerificationSuccess = async (userData) => {
+    console.log('Verificación exitosa:', userData);
+    
+    // Cerrar modal
+    setShowVerificationModal(false);
+    
+    // Mostrar mensaje de éxito
+    toast.success("🎉 ¡Cuenta creada exitosamente! Iniciando sesión...");
+    
+    // Auto-login después de verificación exitosa
+    try {
+      const loginResult = await login(userData.email, formData.password);
+      
+      if (loginResult && loginResult.success) {
+        const sessionData = {
+          userId: loginResult.user.id,
+          email: loginResult.user.email,
+          userType: loginResult.user.userType,
+          loginTime: new Date().toISOString()
+        };
+        
+        localStorage.setItem('userSession', JSON.stringify(sessionData));
+        
+        const userProfile = {
+          name: loginResult.user.name,
+          email: loginResult.user.email,
+          phone: loginResult.user.phone,
+          address: loginResult.user.address,
+          password: '********'
+        };
+        
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        
+        window.dispatchEvent(new CustomEvent('loginStateChanged'));
+        
+        // Limpiar formulario
+        setFormData({
+          email: "",
+          password: "",
+          name: "",
+          address: "",
+          phone: "",
+        });
+        
+        // Redirigir al home
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
+      } else {
+        // Si falla el auto-login, cambiar a modo login
+        toast.info("Cuenta creada. Por favor inicia sesión.");
+        setIsLogin(true);
+        setFormData({
+          email: userData.email,
+          password: "",
+          name: "",
+          address: "",
+          phone: "",
+        });
+      }
+    } catch (error) {
+      console.error("Error en auto-login:", error);
+      toast.info("Cuenta creada. Por favor inicia sesión.");
+      setIsLogin(true);
+      setFormData({
+        email: userData.email,
+        password: "",
+        name: "",
+        address: "",
+        phone: "",
+      });
+    }
+  };
+
+  const handleCloseVerificationModal = () => {
+    setShowVerificationModal(false);
+    setVerificationEmail('');
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && isLogin) {
       handleLogin();
+    }
+  };
+
+  const switchToLogin = () => {
+    if (!isLoading) {
+      setIsLogin(true);
+      setShowVerificationModal(false);
+      setVerificationEmail('');
+    }
+  };
+
+  const switchToRegister = () => {
+    if (!isLoading) {
+      setIsLogin(false);
+      setShowVerificationModal(false);
+      setVerificationEmail('');
     }
   };
 
@@ -155,13 +248,13 @@ const LoginForm = () => {
         <div className="tabs">
           <span 
             className={isLogin ? "active" : ""} 
-            onClick={() => !isLoading && setIsLogin(true)}
+            onClick={switchToLogin}
           >
             Iniciar Sesión
           </span>
           <span 
             className={!isLogin ? "active" : ""} 
-            onClick={() => !isLoading && setIsLogin(false)}
+            onClick={switchToRegister}
           >
             Registrarse
           </span>
@@ -271,11 +364,26 @@ const LoginForm = () => {
               className="login-btn"
               disabled={isLoading}
             >
-              {isLoading ? "Registrando..." : "Registrarse"}
+              {isLoading ? "Enviando código..." : "Registrarse"}
             </button>
+            
+            <div className="verification-info">
+              <p style={{ fontSize: '12px', color: '#666', textAlign: 'center', marginTop: '10px' }}>
+                📧 Te enviaremos un código de verificación a tu email
+              </p>
+            </div>
           </form>
         )}
       </div>
+
+      {/* Modal de verificación */}
+      <VerificationModal
+        isOpen={showVerificationModal}
+        onClose={handleCloseVerificationModal}
+        email={verificationEmail}
+        onVerificationSuccess={handleVerificationSuccess}
+      />
+
       <ToastContainer 
         position="top-right" 
         autoClose={3000}

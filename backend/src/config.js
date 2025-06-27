@@ -25,10 +25,12 @@ export const config = {
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD
   },
   
-  // Configuración de email (si usas envío de emails)
-  EMAIL: {
-    USER: process.env.USER_EMAIL,
-    PASS: process.env.USER_PASS
+  // Configuración de email para verificación
+  email: {
+    EMAIL_USER: process.env.USER_EMAIL,
+    EMAIL_PASS: process.env.USER_PASS,
+    FROM_NAME: 'MediQuick',
+    FROM_EMAIL: process.env.USER_EMAIL
   },
   
   // Configuración de Cloudinary

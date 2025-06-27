@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import jsonwebtoken from "jsonwebtoken";
 import { config } from "./src/config.js";
 
-// Importar rutas
+// Importar rutas existentes
 import userRoutes from "./src/routes/user.js";
 import employeesRoutes from "./src/routes/employees.js";
 import categoriesRoutes from "./src/routes/catergories.js";
@@ -17,6 +17,10 @@ import suppliersRoutes from "./src/routes/suppliers.js";
 import orderRoutes from "./src/routes/orders.js";
 import loginRoutes from "./src/routes/login.js";
 import logoutRoutes from "./src/routes/logout.js";
+
+// Importar nueva ruta de verificación
+import verificationRoutes from "./src/routes/verification.js";
+
 import { validateAuthToken } from "./src/middleware/validateAuthToken.js";
 
 // Crear una instancia de Express
@@ -40,6 +44,9 @@ app.use('/uploads', express.static('uploads'));
 // ===== RUTAS PÚBLICAS (sin autenticación requerida) =====
 app.use("/api/login", loginRoutes);
 app.use("/api/logout", logoutRoutes);
+
+// Nueva ruta de verificación (PÚBLICA)
+app.use("/api/verification", verificationRoutes);
 
 // Rutas de productos - AHORA PÚBLICAS para visualización (se maneja internamente)
 app.use("/api/products", productsRoutes);

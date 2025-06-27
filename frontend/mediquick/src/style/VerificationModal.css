@@ -1,0 +1,393 @@
+/* Modal Overlay */
+.verification-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal Container */
+.verification-modal {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Close Button */
+.verification-modal .close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  color: #64748b;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.verification-modal .close-btn:hover {
+  background: #D65414;
+  color: white;
+  border-color: #D65414;
+  transform: rotate(90deg);
+}
+
+/* Modal Header */
+.modal-header {
+  padding: 40px 30px 20px 30px;
+  text-align: center;
+  background: linear-gradient(135deg, #84C1D9 0%, #a8d1e7 100%);
+  border-radius: 20px 20px 0 0;
+  color: white;
+}
+
+.modal-header .icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.modal-header h2 {
+  margin: 0 0 15px 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.modal-header p {
+  margin: 0;
+  font-size: 16px;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+/* Modal Content */
+.modal-content {
+  padding: 30px;
+}
+
+/* Code Input Section */
+.code-input-container {
+  margin-bottom: 25px;
+}
+
+.code-input-container label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 16px;
+  text-align: center;
+}
+
+.code-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.code-inputs input {
+  width: 50px;
+  height: 60px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.code-inputs input:focus {
+  border-color: #84C1D9;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(132, 193, 217, 0.1);
+  transform: scale(1.05);
+}
+
+.code-inputs input:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.code-inputs input.expired {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+/* Timer Section */
+.timer-section {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.timer {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.timer .time {
+  font-weight: 700;
+  color: #D65414;
+  font-size: 16px;
+}
+
+.expired-text {
+  margin: 0;
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Modal Actions */
+.modal-actions {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.verify-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #84C1D9 0%, #6bb6d6 100%);
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.verify-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6bb6d6 0%, #5aa3c9 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(132, 193, 217, 0.4);
+}
+
+.verify-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Resend Section */
+.resend-section {
+  margin-top: 20px;
+}
+
+.resend-section p {
+  margin: 0 0 10px 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.resend-btn {
+  background: transparent;
+  color: #D65414;
+  border: 2px solid #D65414;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resend-btn:hover:not(:disabled) {
+  background: #D65414;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.resend-btn:disabled {
+  color: #94a3b8;
+  border-color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Help Text */
+.help-text {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid #84C1D9;
+}
+
+.help-text p {
+  margin: 0 0 10px 0;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.help-text ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.help-text li {
+  margin-bottom: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .verification-modal {
+    max-width: 90%;
+    margin: 10px;
+  }
+
+  .modal-header {
+    padding: 30px 20px 20px 20px;
+  }
+
+  .modal-header h2 {
+    font-size: 24px;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+
+  .code-inputs {
+    gap: 8px;
+  }
+
+  .code-inputs input {
+    width: 45px;
+    height: 55px;
+    font-size: 20px;
+  }
+
+  .verification-modal .close-btn {
+    width: 36px;
+    height: 36px;
+    top: 15px;
+    right: 15px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .verification-modal {
+    max-width: 95%;
+  }
+
+  .modal-header {
+    padding: 25px 15px 15px 15px;
+  }
+
+  .modal-header .icon {
+    font-size: 3rem;
+  }
+
+  .modal-header h2 {
+    font-size: 20px;
+  }
+
+  .modal-content {
+    padding: 15px;
+  }
+
+  .code-inputs {
+    gap: 6px;
+  }
+
+  .code-inputs input {
+    width: 40px;
+    height: 50px;
+    font-size: 18px;
+  }
+
+  .help-text {
+    padding: 15px;
+  }
+}
+
+/* Loading states */
+.verify-btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.verify-btn.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Success animation */
+.code-inputs.success input {
+  border-color: #22c55e;
+  background: #f0fdf4;
+  animation: successPulse 0.6s ease;
+}
+
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
